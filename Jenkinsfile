@@ -6,9 +6,9 @@ pipeline {
     }
 
     environment {
-//         imagename = "mahmunsen/god-care"      // docker build로 만들 이미지 이름
+        imagename = "mahmunsen/god-care"      // docker build로 만들 이미지 이름
         registryCredential = 'docker-hub-god-care'
-//         dockerImage = ''
+        dockerImage = ''
     }
 
     stages {
@@ -45,57 +45,56 @@ pipeline {
           }
         }
 
-//         stage('Bulid Docker') {
-//           steps {
-//             echo 'Bulid Docker'
-//             script {
-//                 dockerImage = docker.build imagename
-//             }
-//           }
-//           post {
-//             failure {
-//               error 'This pipeline stops here...'
-//             }
-//           }
-//         }
-//
-//         stage('Push Docker') {
-//           steps {
-//             echo 'Push Docker'
-//             script {
-//                 docker.withRegistry( '', registryCredential) {
-//                     dockerImage.push("1.0")
+        stage('Bulid Docker') {
+          steps {
+            echo 'Bulid Docker'
+            script {
+                dockerImage = docker.build imagename
+            }
+          }
+          post {
+            failure {
+              error 'This pipeline stops here...'
+            }
+          }
+        }
+
+        stage('Push Docker') {
+          steps {
+            echo 'Push Docker'
+            script {
+                docker.withRegistry( '', registryCredential) {
+                    dockerImage.push("latest")
+                }
+            }
+          }
+          post {
+            failure {
+              error 'This pipeline stops here...'
+            }
+          }
+        }
+//             stage('Build Docker Image') {
+//                 steps {
+//                     script {
+//                         image = docker.build('mahmunsen/god-care')
+//                     }
 //                 }
 //             }
-//           }
-//           post {
-//             failure {
-//               error 'This pipeline stops here...'
+//
+//             stage('Push Docker Image') {
+//                 steps {
+//                     script{
+//                         docker.withRegistry( '', registryCredential) {
+//                             image.push('latest')
+//                         }
+//                     }
+//                 }
 //             }
-//           }
-//         }
-            stage('Build Docker Image') {
-                steps {
-                    script {
-                        image = docker.build('mahmunsen/god-care')
-                    }
-                }
-            }
-
-            stage('Push Docker Image') {
-                steps {
-                    script{
-                        docker.withRegistry( '', registryCredential) {
-                            image.push('latest')
-                        }
-                    }
-                }
-            }
 
             stage('Remove Docker Image') {
                 steps {
                     sh 'docker rmi mahmunsen/god-care'
-                    sh 'docker rmi registry.hub.docker.com/mahmunsen/god-care:latest'
                 }
             }
 
