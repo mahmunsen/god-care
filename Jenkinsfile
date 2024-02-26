@@ -18,7 +18,7 @@ pipeline {
             echo 'Clonning Repository'
             git url: 'git@github.com:mahmunsen/god-care.git',
               branch: 'main',
-              credentialsId: 'access-god-care'
+              credentialsId: 'github-god-care'
             }
             post {
              success {
