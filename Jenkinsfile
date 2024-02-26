@@ -98,28 +98,29 @@ pipeline {
                 }
             }
 
-// 				stage('Docker Run') {
-//             steps {
-//                 echo 'Pull Docker Image & Docker Image Run'
-//                 sshagent (credentials: ['ssh-god-care']) {
-//                     sh "ssh -o StrictHostKeyChecking=no root@101.101.218.151 'docker pull mahmunsen/god-care:1.0'"
-//                     sh "ssh -o StrictHostKeyChecking=no root@101.101.218.151 'docker ps -q --filter name=GodCare | grep -q . && docker rm -f \$(docker ps -aq --filter name=GodCare); docker run -d --name GodCare -p 8081:8080 mahmunsen/god-care:1.0'"
+//             stage('Docker Run') {
+//                             steps {
+//                                 echo 'Pull Docker Image & Docker Image Run'
+//                                 sshagent (credentials: ['ssh-god-care']) {
+//                                     sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker pull mahmunsen/god-care:latest'"
+//                                     sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker run -d -p 8081:8080 mahmunsen/god-care:latest'"
 //
-//                 }
-//             }
-//         }
-//     }
-    		stage('Docker Run') {
-                steps {
-                    echo 'Pull Docker Image & Docker Image Run'
-                    sshagent (credentials: ['ssh-god-care']) {
-                        sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker pull mahmunsen/god-care:1.0'"
-                        sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker run -d -p 8081:8080 mahmunsen/god-care:1.0'"
+//                                 }
+//                             }
+//                         }
+//                     }
 
-                    }
+				stage('Docker Run') {
+            steps {
+                echo 'Pull Docker Image & Docker Image Run'
+                sshagent (credentials: ['ssh-god-care']) {
+                    sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker pull mahmunsen/god-care:latest'"
+                    sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker ps -q --filter name=GodCare | grep -q . && docker rm -f \$(docker ps -aq --filter name=GodCare); docker run -d --name GodCare -p 8081:8080 mahmunsen/god-care:latest'"
+
                 }
             }
         }
+    }
 		post {
           success {
               discordSend description: "알림테스트",
