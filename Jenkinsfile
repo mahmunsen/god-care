@@ -103,8 +103,8 @@ pipeline {
             steps {
                 echo 'Pull Docker Image & Docker Image Run'
                 sshagent (credentials: ['ssh-god-care']) {
-                    sh "ssh -o StrictHostKeyChecking=no root@101.101.218.151 'docker pull mahmunsen/god-care'"
-                    sh "ssh -o StrictHostKeyChecking=no root@101.101.218.151 'docker ps -q --filter name=GodCare | grep -q . && docker rm -f \$(docker ps -aq --filter name=GodCare); docker run -d --name GodCare -p 8081:8080 mahmunsen/god-care'"
+                    sh "ssh -o StrictHostKeyChecking=no root@101.101.218.151:8081 'docker pull mahmunsen/god-care:1.0'"
+                    sh "ssh -o StrictHostKeyChecking=no root@101.101.218.151:8081 'docker ps -q --filter name=GodCare | grep -q . && docker rm -f \$(docker ps -aq --filter name=GodCare); docker run -d --name GodCare -p 8081:8080 mahmunsen/god-care:1.0'"
 
                 }
             }
