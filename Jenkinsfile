@@ -95,7 +95,7 @@ pipeline {
             stage('Remove Docker Image') {
                 steps {
                     sh 'docker rmi mahmunsen/god-care'
-                    sh 'docker rmi mahmunsen/god-care:latest'
+                    sh 'docker rmi registry.hub.docker.com/mahmunsen/god-care:latest'
                 }
             }
 
