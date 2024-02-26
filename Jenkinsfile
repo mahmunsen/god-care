@@ -87,14 +87,14 @@ pipeline {
                 footer: "테스트 빌드가 성공했습니다.",
                 link: env.BUILD_URL, result: currentBuild.currentResult,
                 title: "테스트 젠킨스 job",
-                webhookURL: "https://discord.com/api/webhooks/1211628671350210590/nrF2R2cOTHm1eDIJtzoObhEPFgPAFy4VGfAs6Pilmb-9Xibg5051fPDnFPs2J-2UPDc4"
+                webhookURL: "https://discord.com/api/webhooks/1211631579340865536/POFHTY_zmZVQLuGmmdX_wki4Qfoausy-yKgg030H9v1_FdJ_iCrGK9o4VwI50GJDeLXq"
           }
           failure {
               discordSend description: "알림테스트",
                 footer: "테스트 빌드가 실패했습니다.",
                 link: env.BUILD_URL, result: currentBuild.currentResult,
                 title: "테스트 젠킨스 job",
-                webhookURL: "https://discord.com/api/webhooks/1211628671350210590/nrF2R2cOTHm1eDIJtzoObhEPFgPAFy4VGfAs6Pilmb-9Xibg5051fPDnFPs2J-2UPDc4"
+                webhookURL: "https://discord.com/api/webhooks/1211631579340865536/POFHTY_zmZVQLuGmmdX_wki4Qfoausy-yKgg030H9v1_FdJ_iCrGK9o4VwI50GJDeLXq"
           }
       }
 }
