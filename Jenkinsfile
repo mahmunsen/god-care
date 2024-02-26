@@ -11,7 +11,7 @@ pipeline {
         stage('Prepare') {
           steps {
             echo 'Clonning Repository'
-            git url: 'git@github.com:f-lab-edu/god-care.git',
+            git url: 'git@github.com:mahmunsen/god-care.git',
               branch: 'main',
               credentialsId: 'github-god-care'
             }
