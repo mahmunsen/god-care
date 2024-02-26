@@ -6,9 +6,9 @@ pipeline {
     }
 
     environment {
-        imagename = "mahmunsen/god-care"      // docker build로 만들 이미지 이름
+//         imagename = "mahmunsen/god-care"      // docker build로 만들 이미지 이름
         registryCredential = 'docker-hub-god-care'
-        dockerImage = ''
+//         dockerImage = ''
     }
 
     stages {
@@ -45,71 +45,82 @@ pipeline {
           }
         }
 
-        stage('Bulid Docker') {
-          steps {
-            echo 'Bulid Docker'
-            script {
-                dockerImage = docker.build imagename
-            }
-          }
-          post {
-            failure {
-              error 'This pipeline stops here...'
-            }
-          }
-        }
-
-        stage('Push Docker') {
-          steps {
-            echo 'Push Docker'
-            script {
-                docker.withRegistry( '', registryCredential) {
-                    dockerImage.push("1.0")
+//         stage('Bulid Docker') {
+//           steps {
+//             echo 'Bulid Docker'
+//             script {
+//                 dockerImage = docker.build imagename
+//             }
+//           }
+//           post {
+//             failure {
+//               error 'This pipeline stops here...'
+//             }
+//           }
+//         }
+//
+//         stage('Push Docker') {
+//           steps {
+//             echo 'Push Docker'
+//             script {
+//                 docker.withRegistry( '', registryCredential) {
+//                     dockerImage.push("1.0")
+//                 }
+//             }
+//           }
+//           post {
+//             failure {
+//               error 'This pipeline stops here...'
+//             }
+//           }
+//         }
+            stage('Build Docker Image') {
+                steps {
+                    script {
+                        image = docker.build('mahmunsen/god-care')
+                    }
                 }
             }
-          }
-          post {
-            failure {
-              error 'This pipeline stops here...'
-            }
-          }
-        }
-//             stage('Build Docker Image') {
-//                 steps {
-//                     script {
-//                         image = docker.build('mahmunsen/god-care')
-//                     }
-//                 }
-//             }
-//
-//             stage('Push Docker Image') {
-//                 steps {
-//                     script{
-//                         docker.withRegistry('https://registry.hub.docker.com/', 'docker-hub') {
-//                             image.push('latest')
-//                         }
-//                     }
-//                 }
-//             }
-//
-//             stage('Remove Docker Image') {
-//                 steps {
-//                     sh 'docker rmi mahmunsen/god-care'
-//                     sh 'docker rmi registry.hub.docker.com/mahmunsen/god-care:latest'
-//                 }
-//             }
-//
-				stage('Docker Run') {
-            steps {
-                echo 'Pull Docker Image & Docker Image Run'
-                sshagent (credentials: ['ssh-god-care']) {
-                    sh "ssh -o StrictHostKeyChecking=no root@106.10.41.63 'docker pull mahmunsen/god-care:1.0'"
-                    sh "ssh -o StrictHostKeyChecking=no root@106.10.41.63 'docker ps -q --filter name=GodCare | grep -q . && docker rm -f \$(docker ps -aq --filter name=GodCare); docker run -d --name GodCare -p 8081:8080 mahmunsen/god-care:1.0'"
 
+            stage('Push Docker Image') {
+                steps {
+                    script{
+                        docker.withRegistry( '', registryCredential) {
+                            image.push('latest')
+                        }
+                    }
+                }
+            }
+
+            stage('Remove Docker Image') {
+                steps {
+                    sh 'docker rmi mahmunsen/god-care'
+                    sh 'docker rmi mahmunsen/god-care:latest'
+                }
+            }
+
+// 				stage('Docker Run') {
+//             steps {
+//                 echo 'Pull Docker Image & Docker Image Run'
+//                 sshagent (credentials: ['ssh-god-care']) {
+//                     sh "ssh -o StrictHostKeyChecking=no root@101.101.218.151 'docker pull mahmunsen/god-care:1.0'"
+//                     sh "ssh -o StrictHostKeyChecking=no root@101.101.218.151 'docker ps -q --filter name=GodCare | grep -q . && docker rm -f \$(docker ps -aq --filter name=GodCare); docker run -d --name GodCare -p 8081:8080 mahmunsen/god-care:1.0'"
+//
+//                 }
+//             }
+//         }
+//     }
+    		stage('Docker Run') {
+                steps {
+                    echo 'Pull Docker Image & Docker Image Run'
+                    sshagent (credentials: ['ssh-god-care']) {
+                        sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker pull mahmunsen/god-care:1.0'"
+                        sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker run -d -p 8081:8080 mahmunsen/god-care:1.0'"
+
+                    }
                 }
             }
         }
-    }
 		post {
           success {
               discordSend description: "알림테스트",
