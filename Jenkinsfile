@@ -1,5 +1,10 @@
 pipeline {
     agent any
+
+    triggers {
+        pollSCM('*/3 * * * *')
+    }
+
     environment {
         imagename = "god-care"      // docker build로 만들 이미지 이름
         registryCredential = 'docker-hub-god-care'
@@ -7,13 +12,13 @@ pipeline {
     }
 
     stages {
-
+      // git에서 repository clone
         stage('Prepare') {
           steps {
             echo 'Clonning Repository'
             git url: 'git@github.com:mahmunsen/god-care.git',
               branch: 'main',
-              credentialsId: 'github-god-care'
+              credentialsId: 'access-god-care'
             }
             post {
              success {
@@ -59,7 +64,7 @@ pipeline {
             echo 'Push Docker'
             script {
                 docker.withRegistry( '', registryCredential) {
-                    dockerImage.push()
+                    dockerImage.push("1.0")
                 }
             }
           }
