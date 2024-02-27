@@ -74,62 +74,22 @@ pipeline {
             }
           }
         }
-//             stage('Build Docker Image') {
-//                 steps {
-//                     script {
-//                         image = docker.build('mahmunsen/god-care')
-//                     }
-//                 }
-//             }
-//
-//             stage('Push Docker Image') {
-//                 steps {
-//                     script{
-//                         docker.withRegistry( '', registryCredential) {
-//                             image.push('latest')
-//                         }
-//                     }
-//                 }
-//             }
 
-            stage('Remove Docker Image') {
-                steps {
-                    sh 'docker rmi mahmunsen/god-care'
+        stage('Remove Docker Image') {
+          steps {
+            sh 'docker rmi mahmunsen/god-care'
                 }
-            }
-
-//             stage('Docker Run') {
-//                             steps {
-//                                 echo 'Pull Docker Image & Docker Image Run'
-//                                 sshagent (credentials: ['ssh-god-care']) {
-//                                     sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker pull mahmunsen/god-care:latest'"
-//                                     sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker run -d -p 8081:8080 mahmunsen/god-care:latest'"
-//
-//                                 }
-//                             }
-//                         }
-//                     }
-
-				stage('Docker Run') {
-            steps {
-                echo 'Pull Docker Image & Docker Image Run'
-                sshagent (credentials: ['ssh-god-care']) {
-                    sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker pull mahmunsen/god-care:latest'"
-                    sh "ssh -o StrictHostKeyChecking=no 8081 root@101.101.218.151 'docker ps -q --filter name=GodCare | grep -q . && docker rm -f \$(docker ps -aq --filter name=GodCare); docker run -d --name GodCare -p 8081:8080 mahmunsen/god-care:latest'"
-
-                }
-            }
-        }
-    }
-		post {
-          success {
+          }
+          // deploy 부분 수정 후 삽입 예정
+		  post {
+            success {
               discordSend description: "알림테스트",
                 footer: "테스트 빌드가 성공했습니다.",
                 link: env.BUILD_URL, result: currentBuild.currentResult,
                 title: "테스트 젠킨스 job",
                 webhookURL: "https://discord.com/api/webhooks/1211631579340865536/POFHTY_zmZVQLuGmmdX_wki4Qfoausy-yKgg030H9v1_FdJ_iCrGK9o4VwI50GJDeLXq"
-          }
-          failure {
+            }
+            failure {
               discordSend description: "알림테스트",
                 footer: "테스트 빌드가 실패했습니다.",
                 link: env.BUILD_URL, result: currentBuild.currentResult,
@@ -138,3 +98,6 @@ pipeline {
           }
       }
 }
+
+
+
