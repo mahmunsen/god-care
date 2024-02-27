@@ -97,7 +97,6 @@ pipeline {
                 webhookURL: "https://discord.com/api/webhooks/1211631579340865536/POFHTY_zmZVQLuGmmdX_wki4Qfoausy-yKgg030H9v1_FdJ_iCrGK9o4VwI50GJDeLXq"
           }
       }
+  }
+
 }
-
-
-
