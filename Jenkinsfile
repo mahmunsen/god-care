@@ -80,21 +80,12 @@ pipeline {
                     sh 'docker rmi mahmunsen/god-care'
                 }
             }
-    }
-		post {
-          success {
-              discordSend description: "알림테스트",
-                footer: "테스트 빌드가 성공했습니다.",
-                link: env.BUILD_URL, result: currentBuild.currentResult,
-                title: "테스트 젠킨스 job",
-                webhookURL: "https://discord.com/api/webhooks/1211631579340865536/POFHTY_zmZVQLuGmmdX_wki4Qfoausy-yKgg030H9v1_FdJ_iCrGK9o4VwI50GJDeLXq"
-          }
-          failure {
-              discordSend description: "알림테스트",
-                footer: "테스트 빌드가 실패했습니다.",
-                link: env.BUILD_URL, result: currentBuild.currentResult,
-                title: "테스트 젠킨스 job",
-                webhookURL: "https://discord.com/api/webhooks/1211631579340865536/POFHTY_zmZVQLuGmmdX_wki4Qfoausy-yKgg030H9v1_FdJ_iCrGK9o4VwI50GJDeLXq"
-          }
-      }
-}
+        }
+		 post {
+                    failure {
+                      error 'This pipeline stops here...'
+                    }
+                  }
+                }
+
+                // 추후 배포, 알림 부분 추가 예정
