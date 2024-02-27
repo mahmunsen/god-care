@@ -75,20 +75,21 @@ pipeline {
           }
         }
 
-        stage('Remove Docker Image') {
-          steps {
-            sh 'docker rmi mahmunsen/god-care'
+            stage('Remove Docker Image') {
+                steps {
+                    sh 'docker rmi mahmunsen/god-care'
                 }
-          }     // deploy 부분 추후 삽입
-		  post {
-            success {
+            }
+    }
+		post {
+          success {
               discordSend description: "알림테스트",
                 footer: "테스트 빌드가 성공했습니다.",
                 link: env.BUILD_URL, result: currentBuild.currentResult,
                 title: "테스트 젠킨스 job",
                 webhookURL: "https://discord.com/api/webhooks/1211631579340865536/POFHTY_zmZVQLuGmmdX_wki4Qfoausy-yKgg030H9v1_FdJ_iCrGK9o4VwI50GJDeLXq"
-            }
-            failure {
+          }
+          failure {
               discordSend description: "알림테스트",
                 footer: "테스트 빌드가 실패했습니다.",
                 link: env.BUILD_URL, result: currentBuild.currentResult,
@@ -96,6 +97,4 @@ pipeline {
                 webhookURL: "https://discord.com/api/webhooks/1211631579340865536/POFHTY_zmZVQLuGmmdX_wki4Qfoausy-yKgg030H9v1_FdJ_iCrGK9o4VwI50GJDeLXq"
           }
       }
-  }
-
 }
