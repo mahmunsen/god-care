@@ -79,8 +79,7 @@ pipeline {
           steps {
             sh 'docker rmi mahmunsen/god-care'
                 }
-          }
-          // deploy 부분 수정 후 삽입 예정
+          }     // deploy 부분 추후 삽입
 		  post {
             success {
               discordSend description: "알림테스트",
