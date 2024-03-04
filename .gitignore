@@ -17,7 +17,6 @@
 hs_err_pid*
 replay_pid*
 
-HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -29,9 +28,6 @@ build/
 *.iws
 *.iml
 *.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
 
 ### .DS_Store ###
 .DS_Store
