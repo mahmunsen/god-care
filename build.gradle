@@ -32,7 +32,7 @@ allprojects {
     dependencies {
 
         // slf4j
-        implementation 'org.slf4j:slf4j-api:1.7.36'
+        implementation 'org.slf4j:slf4j-api:2.0.12'
 
         // Lombok
         compileOnly 'org.projectlombok:lombok'
