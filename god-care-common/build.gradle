@@ -1,5 +1,15 @@
-bootJar { enabled = false }
-jar { enabled = true }
+plugins {
+    id 'java-library'
+    id "io.freefair.lombok" version "8.6"
+}
+
+repositories {
+    mavenCentral()
+}
 
 dependencies {
+    // slf4j
+    implementation 'org.slf4j:slf4j-api:1.7.31'
+    // spring boot annotation
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
