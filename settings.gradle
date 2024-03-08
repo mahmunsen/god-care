@@ -1,5 +1,4 @@
 rootProject.name = 'GodCare'
 include 'god-care-api'
 include 'god-care-common'
-include 'god-care-core'
-include 'god-care-external'
+

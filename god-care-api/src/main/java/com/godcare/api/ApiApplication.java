@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @EnableSwagger2
-@SpringBootApplication(scanBasePackages = {"com.godcare.api", "com.godcare.common", "com.godcare.core", "com.godcare.external"})
+@SpringBootApplication(scanBasePackages = {"com.godcare.api", "com.godcare.common"})
 @EntityScan("com.godcare.core")
 public class ApiApplication {
 

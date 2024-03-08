@@ -1,7 +1,5 @@
 dependencies {
     implementation project(":god-care-common")
-    implementation project(":god-care-core")
-    implementation project(":god-care-external")
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation "org.springframework.boot:spring-boot-starter-validation"
     // swagger
