@@ -1,6 +1,6 @@
-package com.godcare.common.util;
+package com.godcare.api.util;
 
-import com.godcare.common.vo.Response;
+import com.godcare.api.vo.Response;
 import org.springframework.http.ResponseEntity;
 
 public class ApiUtils {

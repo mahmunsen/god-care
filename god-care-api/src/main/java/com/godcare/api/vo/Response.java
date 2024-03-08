@@ -1,4 +1,4 @@
-package com.godcare.common.vo;
+package com.godcare.api.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

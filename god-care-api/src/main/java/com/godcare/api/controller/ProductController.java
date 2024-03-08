@@ -1,9 +1,9 @@
 package com.godcare.api.controller;
 
 import com.godcare.common.dto.ResisterProductRequest;
-import com.godcare.common.util.ApiUtils;
-import com.godcare.common.vo.Response;
-import com.godcare.core.service.Product;
+import com.godcare.api.util.ApiUtils;
+import com.godcare.api.vo.Response;
+import com.godcare.api.service.Product;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

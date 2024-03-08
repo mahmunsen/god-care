@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 
-@SpringBootApplication(scanBasePackages = {"com.godcare.api", "com.godcare.common", "com.godcare.core"})
+@SpringBootApplication(scanBasePackages = {"com.godcare.api", "com.godcare.common"})
 @EntityScan("com.godcare.core")
 public class ApiApplication {
 

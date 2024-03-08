@@ -1,6 +1,6 @@
-package com.godcare.common.exception.domain;
+package com.godcare.api.exception.domain;
 
-import com.godcare.common.exception.ErrorCode;
+import com.godcare.api.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

@@ -3,7 +3,7 @@ package com.godcare.api.product;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godcare.api.controller.ProductController;
 import com.godcare.common.dto.ResisterProductRequest;
-import com.godcare.core.service.Product;
+import com.godcare.api.service.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.godcare.common.exception;
+package com.godcare.api.exception;
 
 public interface ErrorCode {
     int getCode();

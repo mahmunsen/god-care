@@ -1,10 +1,9 @@
-package com.godcare.core.service;
+package com.godcare.api.service;
 
 import com.godcare.common.dto.ResisterProductRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 
 @Builder
 @AllArgsConstructor
