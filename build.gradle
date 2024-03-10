@@ -1,4 +1,4 @@
-allprojects {
+subprojects {
     group = 'com.god-care'
     version = '0.0.1-SNAPSHOT'
 }
