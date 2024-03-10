@@ -1,3 +1,18 @@
+plugins {
+    id("org.gradle.toolchains.foojay-resolver") version "0.8.0"
+}
+
+toolchainManagement {
+    jvm {
+        javaRepositories {
+            repository("foojay") {
+                resolverClass = org.gradle.toolchains.foojay.FoojayToolchainResolver
+            }
+        }
+    }
+}
+
 rootProject.name = 'GodCare'
 include 'god-care-api'
 include 'god-care-common'
+
