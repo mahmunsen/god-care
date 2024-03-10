@@ -19,14 +19,14 @@ pipeline {
             git url: 'git@github.com:mahmunsen/god-care.git',
               branch: 'develop',
               credentialsId: 'github-god-care'
-            }
-            post {
-             success {
+          }
+          post {
+            success {
                echo 'Successfully Cloned Repository'
-             }
-           	 failure {
+            }
+           	failure {
                error 'This pipeline stops here...'
-             }
+            }
           }
         }
 
@@ -36,7 +36,7 @@ pipeline {
             dir('.'){
                 sh './gradlew build -x test'
                 sh './gradlew clean build'
-					  }
+			}
           }
           post {
             failure {
@@ -63,9 +63,9 @@ pipeline {
           steps {
             echo 'Push Docker'
             script {
-                docker.withRegistry( '', registryCredential) {
-                    dockerImage.push("latest")
-                }
+              docker.withRegistry( '', registryCredential) {
+                 dockerImage.push("latest")
+              }
             }
           }
           post {
@@ -75,17 +75,15 @@ pipeline {
           }
         }
 
-            stage('Remove Docker Image') {
-                steps {
-                    sh 'docker rmi mahmunsen/god-care'
-                }
-            }
+        stage('Remove Docker Image') {
+           steps {
+               sh 'docker rmi mahmunsen/god-care'
+           }
         }
-		 post {
-                    failure {
-                      error 'This pipeline stops here...'
-                    }
-                  }
-                }
-
-                // 추후 배포, 알림 부분 추가 예정
+    }
+	post {
+        failure {
+          error 'This pipeline stops here...'
+        }
+    }
+}    // 추후 배포, 알림 부분 추가 예정

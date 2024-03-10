@@ -1,10 +1,10 @@
-package com.github.godcare;
+package com.godcare.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class GodCareApplicationTests {
+class ApiApplicationTests {
 
     @Test
     void contextLoads() {
