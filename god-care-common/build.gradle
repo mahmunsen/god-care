@@ -10,6 +10,4 @@ repositories {
 dependencies {
     // slf4j
     implementation 'org.slf4j:slf4j-api:1.7.31'
-    // spring boot annotation
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
