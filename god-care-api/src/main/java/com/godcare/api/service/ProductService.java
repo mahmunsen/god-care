@@ -2,6 +2,7 @@ package com.godcare.api.service;
 
 import com.godcare.api.entity.Product;
 import com.godcare.api.repository.ProductRepository;
+import com.godcare.common.dto.ResisterProductRequest;
 import com.godcare.common.dto.UpdateProductRequest;
 import com.godcare.common.dto.ViewProductResponse;
 import lombok.RequiredArgsConstructor;

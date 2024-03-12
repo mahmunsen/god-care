@@ -20,8 +20,7 @@ public class Product {
     public void assignId(Long id) {
         this.id = id;
     }
-
-    public static Product toUpdatedProduct(ResisterProductRequest request) {
+    public static Product toProduct(ResisterProductRequest request) {
         return Product.builder()
                 .mainImg(request.getMainImg())
                 .categoryId(request.getCategoryId())

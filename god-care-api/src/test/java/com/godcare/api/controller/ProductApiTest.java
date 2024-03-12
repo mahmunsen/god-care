@@ -44,7 +44,7 @@ public class ProductApiTest {
     void uploadProductTest() throws Exception {
         // ResisterProductRequest -> Product 변환
         ResisterProductRequest request = new ResisterProductRequest("main.img", 1L);
-        Product productToSave = Product.toUpdatedProduct(request);
+        Product productToSave = Product.toProduct(request);
 
         // Product 저장 로직 구현
         save(productToSave);

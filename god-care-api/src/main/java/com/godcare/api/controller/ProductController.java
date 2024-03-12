@@ -29,7 +29,7 @@ public class ProductController<V> {
     @PostMapping(path = "")
     public ResponseEntity<Response<Object>> addProduct(@RequestBody ResisterProductRequest resisterProductRequest) {
 
-        Product savedProduct = productService.addProduct(Product.toUpdatedProduct(resisterProductRequest));
+        Product savedProduct = productService.addProduct(Product.toProduct(resisterProductRequest));
 
         return ApiUtils.success(HttpStatus.CREATED.value(), "상품이 등록되었습니다.", "productId: " + savedProduct.getId());
     }
