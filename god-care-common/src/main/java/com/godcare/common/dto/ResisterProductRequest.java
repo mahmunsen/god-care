@@ -2,7 +2,6 @@ package com.godcare.common.dto;
 import lombok.*;
 
 @Builder
-@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
