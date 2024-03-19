@@ -1,53 +1,49 @@
 package com.godcare.api.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.godcare.api.service.ProductService;
+import com.godcare.api.vo.Response;
 import com.godcare.common.dto.ResisterProductRequest;
 import com.godcare.api.entity.Product;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import com.godcare.common.dto.ResisterProductResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.filter.CharacterEncodingFilter;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
+@ExtendWith(MockitoExtension.class)
 @WebMvcTest(ProductController.class)
 public class ProductApiTest {
-    Map<Long, Product> persistence = new HashMap<>();
-    Long sequence = 0L;
 
     @Autowired
     MockMvc mvc;
 
-    @Autowired
-    private WebApplicationContext ctx;
+    @MockBean
+    private ProductService productService;
 
-    @BeforeEach
-    public void setup() {
-        this.mvc = MockMvcBuilders.webAppContextSetup(ctx)
-                .addFilters(new CharacterEncodingFilter("UTF-8", true))
-                .build();
-    }
     @Test
-    @DisplayName("상품 등록 테스트")
+    @DisplayName("상품 등록 (컨트롤러 단위) 테스트")
     void uploadProductTest() throws Exception {
         // ResisterProductRequest -> Product 변환
         ResisterProductRequest request = new ResisterProductRequest("main.img", 1L);
         Product productToSave = Product.toProduct(request);
 
-        // Product 저장 로직 구현
-        save(productToSave);
+        // ProductService가 저장된 Product를 반환하도록 설정
+        productToSave.assignId(1L);  // 테스트에서 기대하는 id 설정
+        when(productService.addProduct(any(Product.class))).thenReturn(productToSave);
 
         // 요청으로 보낼 dto
         String content = new ObjectMapper().writeValueAsString(request);
@@ -60,18 +56,14 @@ public class ProductApiTest {
                 .andReturn();
 
         // response 객체 반환
-        Map<String, Object> responseMap = new ObjectMapper().readValue(mvcResult.getResponse().getContentAsString(), Map.class);
+        Response<ResisterProductResponse> response = new ObjectMapper().readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<Response<ResisterProductResponse>>() {
+        });
 
         // 검증
-        Assertions.assertEquals(responseMap.get("result"), true);
-        Assertions.assertEquals(responseMap.get("status"), 201);
-        Assertions.assertEquals(responseMap.get("message"), "상품이 등록되었습니다.");
-        Assertions.assertEquals(responseMap.get("data"), "productId: 1");
-    }
+        assertEquals(response.getSuccess(), true);
+        assertEquals(response.getData().getProductId(), 1L);
 
-    private Product save(Product product) {
-        product.assignId(++sequence);
-        persistence.put(product.getId(), product);
-        return product;
+        // Service 메서드 호출 여부 확인
+        verify(productService, times(1)).addProduct(any(Product.class));
     }
 }
