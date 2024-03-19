@@ -57,9 +57,9 @@ public class ProductController {
     @PatchMapping(path = "/{product_id}")
     public Response<String> updateProduct(@PathVariable(value = "product_id") Long productId, @RequestBody UpdateProductRequest updateProductRequest) {
 
-        productService.updateProduct(productId, updateProductRequest);
+        Product product = productService.updateProduct(productId, updateProductRequest);
 
-        return Response.success("productId: " + productId);
+        return Response.success("productId: " + product.getId());
     }
 
     @ResponseStatus(HttpStatus.OK)
