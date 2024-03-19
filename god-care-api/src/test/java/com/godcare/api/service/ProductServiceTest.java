@@ -5,20 +5,16 @@ import com.godcare.api.entity.Product;
 import com.godcare.api.repository.ProductRepository;
 import com.godcare.common.dto.ResisterProductRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -28,10 +24,6 @@ public class ProductServiceTest {
     private ProductRepository productRepository;
     @InjectMocks
     private ProductService productService;
-    @BeforeEach
-    public void SetUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @DisplayName("상품을 등록한다")
     @Test
