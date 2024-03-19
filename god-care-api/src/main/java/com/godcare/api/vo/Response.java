@@ -3,7 +3,6 @@ package com.godcare.api.vo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 
-
 @Getter
 public class Response<T> {
     private final Boolean success;
@@ -11,6 +10,12 @@ public class Response<T> {
     private final String message;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final T data;
+
+    public Response() {
+        this.success = null;
+        this.message = null;
+        this.data = null;
+    }
 
     private Response(Boolean success, String message, T data) {
         this.success = success;
