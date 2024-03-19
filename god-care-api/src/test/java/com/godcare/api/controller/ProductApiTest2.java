@@ -18,6 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
@@ -48,7 +51,6 @@ public class ProductApiTest2 {
         // given
         Long id = 3L;
 
-        // when, then
         Product product = Product.builder()
                 .id(3L)
                 .mainImg("ex.img")
@@ -61,6 +63,7 @@ public class ProductApiTest2 {
                 .categoryId(product.getCategoryId())
                 .build();
 
+        // when, then
         when(productService.getProduct(anyLong())).thenReturn(viewProductResponse);
 //        when(productRepository.findById(anyLong())).thenReturn(product);
 
@@ -73,11 +76,36 @@ public class ProductApiTest2 {
         });
 
         assertEquals(response.getSuccess(), true);
-        assertEquals(response.getData().getProductId(),3L);
-        assertEquals(response.getData().getMainImg(),"ex.img");
+        assertEquals(response.getData().getProductId(), 3L);
+        assertEquals(response.getData().getMainImg(), "ex.img");
         assertEquals(response.getData().getCategoryId(), 4L);
         verify(productService).getProduct(id);
 //        verify(productRepository).findById(id);  // 작동하지 않음
+    }
+
+    @Test
+    @DisplayName("상품 리스트 조회한다.")
+    void viewProductList() throws Exception {
+        // given
+        List<ViewProductResponse> productList = Arrays.asList(new ViewProductResponse(1L, "vitamin.img", 1L), new ViewProductResponse(2L, "magnesium", 1L), new ViewProductResponse(3L, "probiotics", 3L), new ViewProductResponse(4L, "star-care", 4L));
+
+        // when, then
+        when(productService.getAllProducts()).thenReturn(productList);
+
+        MvcResult mvcResult = mvc.perform(get("/api/v1/products"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        Response<List<ViewProductResponse>> response = new ObjectMapper().readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<Response<List<ViewProductResponse>>>() {
+        });
+
+        assertEquals(response.getSuccess(), true);
+        assertEquals(response.getData().get(0).getMainImg(),"vitamin.img");
+        assertEquals(response.getData().get(1).getMainImg(),"magnesium");
+        assertEquals(response.getData().get(2).getMainImg(),"probiotics");
+        assertEquals(response.getData().get(3).getMainImg(),"star-care");
+        verify(productService).getAllProducts();
     }
 }
 
