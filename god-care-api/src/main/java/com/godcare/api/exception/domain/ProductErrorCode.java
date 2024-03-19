@@ -7,11 +7,11 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum ProductErrorCode implements ErrorCode {
+public enum ProductErrorCode implements ErrorCode{
 
-    NOT_FOUND_PRODUCT(HttpStatus.NOT_FOUND.value(), "요청하신 상품을 찾을 수 없습니다.");
+    NOT_FOUND_PRODUCT(HttpStatus.NOT_FOUND, "요청하신 상품을 찾을 수 없습니다.");
 
-    private final int code;
+    private final HttpStatus code;
     private final String message;
 
 }
