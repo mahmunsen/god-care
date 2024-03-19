@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,8 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -146,6 +146,30 @@ public class ProductApiTest2 {
         assertEquals(response.getData(), "productId: " + product.getId());
 
         verify(productService).updateProduct(productId, request);
+    }
+
+
+    @Test
+    @DisplayName("해당 상품을 삭제한다.")
+    void deleteProduct() throws Exception {
+        // given
+        Long productId = 4L;
+
+        // when, then
+        Mockito.doNothing().when(productService).deleteProduct(anyLong());
+
+
+        MvcResult mvcResult = mvc.perform(delete("/api/v1/products/{product_id}", productId))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        Response<String> response = new ObjectMapper().readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<Response<String>>() {
+        });
+
+        assertEquals(response.getSuccess(), true);
+        assertEquals(response.getData(), "productId: " + productId);
+        verify(productService).deleteProduct(productId);
     }
 }
 
