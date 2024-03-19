@@ -1,23 +1,27 @@
 package com.godcare.api.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
 import lombok.Getter;
+
 
 @Getter
 public class Response<T> {
-    private final Boolean result;
-    private final Integer status;
+    private final Boolean success;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String message;
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final T data;
 
-    @Builder
-    public Response(Boolean result, Integer status, String message, T data) {
-        this.result = result;
-        this.status = status;
+    private Response(Boolean success, String message, T data) {
+        this.success = success;
         this.message = message;
         this.data = data;
+    }
+    public static <T> Response<T> success(T data) {
+        return new Response<>(true,null, data);
+    }
+
+    public static <T> Response<T> fail(String message) {
+        return new Response<>(false, message,null);
     }
 }
