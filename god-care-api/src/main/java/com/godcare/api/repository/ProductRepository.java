@@ -2,9 +2,7 @@ package com.godcare.api.repository;
 
 import com.godcare.api.entity.Product;
 import org.springframework.stereotype.Repository;
-
 import java.util.HashMap;
-import java.util.Map;
 
 @Repository
 public class ProductRepository extends HashMap<Long, Product>{
