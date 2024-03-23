@@ -7,26 +7,17 @@ import lombok.Getter;
 public class Response<T> {
     private final Boolean success;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final String message;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final T data;
 
-    public Response() {
-        this.success = null;
-        this.message = null;
-        this.data = null;
-    }
-
-    private Response(Boolean success, String message, T data) {
+    private Response(Boolean success, T data) {
         this.success = success;
-        this.message = message;
         this.data = data;
     }
     public static <T> Response<T> success(T data) {
-        return new Response<>(true,null, data);
+        return new Response<>(true, data);
     }
 
-    public static <T> Response<T> fail(String message) {
-        return new Response<>(false, message,null);
+    public static <T> Response<T> fail(T data) {
+        return new Response<>(false, data);
     }
 }
