@@ -4,6 +4,7 @@ import com.godcare.api.entity.Product;
 import com.godcare.api.repository.ProductRepository;
 import com.godcare.common.dto.ResisterProductRequest;
 import com.godcare.common.dto.UpdateProductRequest;
+import com.godcare.common.dto.ViewProductListResponse;
 import com.godcare.common.dto.ViewProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,8 +21,8 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     // 상품등록
-    public Product addProduct(Product product) {
-        Product savedProduct = productRepository.save(product);
+    public Product addProduct(ResisterProductRequest request) {
+        Product savedProduct = productRepository.save(Product.from(request));
         return savedProduct;
     }
     // 상품조회
@@ -30,16 +31,17 @@ public class ProductService {
         return new ViewProductResponse(product.getId(), product.getMainImg(), product.getCategoryId());
     }
     // 상품전체조회
-    public List<ViewProductResponse> getAllProducts() {
+    public List<ViewProductListResponse> getAllProducts() {
         Collection<Product> values = productRepository.values();
-        return values.stream().map(product -> new ViewProductResponse(product.getId(), product.getMainImg(), product.getCategoryId())).collect(Collectors.toList());
+        return values.stream().map(product -> new ViewProductListResponse(product.getMainImg(), product.getCategoryId())).collect(Collectors.toList());
     }
     // 상품수정
     public Product updateProduct(Long productId, UpdateProductRequest updateProductRequest) {
         // 상품 찾기
         Product product = productRepository.findById(productId);
         // 해당 엔티티의 내용을 수정 사항과 맵핑하여 저장
-        Product updatedProduct = productRepository.saveUpdated(product.toUpdatedProduct(updateProductRequest, product.getId()));
+        product.update(updateProductRequest.getMainImg(), updateProductRequest.getCategoryId());
+        Product updatedProduct = productRepository.saveUpdated(product);
         return updatedProduct;
     }
 

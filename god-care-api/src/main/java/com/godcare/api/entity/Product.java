@@ -1,15 +1,12 @@
 package com.godcare.api.entity;
 
 import com.godcare.common.dto.ResisterProductRequest;
-import com.godcare.common.dto.UpdateProductRequest;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 public class Product {
 
@@ -20,17 +17,15 @@ public class Product {
     public void assignId(Long id) {
         this.id = id;
     }
-    public static Product toProduct(ResisterProductRequest request) {
-        return Product.builder()
-                .mainImg(request.getMainImg())
-                .categoryId(request.getCategoryId())
-                .build();
+    public static Product from(ResisterProductRequest request) {
+        String mainImg = request.getMainImg();
+        Long categoryId = request.getCategoryId();
+        Long id = null;
+        return new Product(mainImg, categoryId, id);
     }
-    public static Product toUpdatedProduct(UpdateProductRequest updateProductRequest, Long id) {
-        return Product.builder()
-                .mainImg(updateProductRequest.getMainImg())
-                .categoryId(updateProductRequest.getCategoryId())
-                .id(id)
-                .build();
+
+    public void update(String mainImg, Long categoryId) {
+      this.mainImg = mainImg;
+      this.categoryId = categoryId;
     }
 }
