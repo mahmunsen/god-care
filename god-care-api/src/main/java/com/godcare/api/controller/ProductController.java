@@ -1,12 +1,9 @@
 package com.godcare.api.controller;
 
 import com.godcare.api.service.ProductService;
-import com.godcare.common.dto.ResisterProductRequest;
+import com.godcare.common.dto.*;
 import com.godcare.api.vo.Response;
 import com.godcare.api.entity.Product;
-import com.godcare.common.dto.ResisterProductResponse;
-import com.godcare.common.dto.UpdateProductRequest;
-import com.godcare.common.dto.ViewProductResponse;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +25,7 @@ public class ProductController {
     @PostMapping(path = "")
     public Response<ResisterProductResponse> addProduct(@RequestBody ResisterProductRequest resisterProductRequest) {
 
-        Product savedProduct = productService.addProduct(Product.toProduct(resisterProductRequest));
+        Product savedProduct = productService.addProduct(resisterProductRequest);
 
         return Response.success(new ResisterProductResponse(savedProduct.getId()));
     }
@@ -45,9 +42,9 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "상품 전체 조회 API ", description = "전체 상품 조회하는 API")
     @GetMapping(path = "")
-    public Response<List<ViewProductResponse>> viewProductList() {
+    public Response<List<ViewProductListResponse>> viewProductList() {
 
-        List<ViewProductResponse> productList = productService.getAllProducts();
+        List<ViewProductListResponse> productList = productService.getAllProducts();
 
         return Response.success(productList);
     }
@@ -55,20 +52,20 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "상품 수정하는 API ", description = "등록된 상품 정보 수정하는 API")
     @PatchMapping(path = "/{product_id}")
-    public Response<String> updateProduct(@PathVariable(value = "product_id") Long productId, @RequestBody UpdateProductRequest updateProductRequest) {
+    public Response<UpdateProductResponse> updateProduct(@PathVariable(value = "product_id") Long productId, @RequestBody UpdateProductRequest updateProductRequest) {
 
         Product product = productService.updateProduct(productId, updateProductRequest);
 
-        return Response.success("productId: " + product.getId());
+        return Response.success(new UpdateProductResponse(product.getId()));
     }
 
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "상품 삭제 API ", description = "등록된 상품 삭제하는 API")
     @DeleteMapping(path = "/{product_id}")
-    public Response<String> deleteProduct(@PathVariable(value = "product_id") Long productId) {
+    public Response<DeleteProductResponse> deleteProduct(@PathVariable(value = "product_id") Long productId) {
 
         productService.deleteProduct(productId);
 
-        return Response.success("productId: " + productId);
+        return Response.success(new DeleteProductResponse(productId));
     }
 }
