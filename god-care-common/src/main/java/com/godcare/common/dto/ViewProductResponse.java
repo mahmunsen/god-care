@@ -1,18 +1,18 @@
 package com.godcare.common.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-@Builder
+@RequiredArgsConstructor
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class ViewProductResponse {
 
+    @NonNull
     private Long productId;
+    @NonNull
     private String mainImg;
+    @NonNull
     private Long categoryId;
 
 }

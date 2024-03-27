@@ -1,12 +1,11 @@
 package com.godcare.common.dto;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@EqualsAndHashCode
-@Builder
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UpdateProductRequest {
 
     private String mainImg;
