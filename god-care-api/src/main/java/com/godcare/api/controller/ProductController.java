@@ -1,6 +1,7 @@
 package com.godcare.api.controller;
 
 import com.godcare.api.service.ProductService;
+import com.godcare.api.vo.PageResponse;
 import com.godcare.common.dto.*;
 import com.godcare.api.vo.Response;
 import com.godcare.api.entity.Product;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import org.springframework.data.domain.PageRequest;
 
 
 @RestController
@@ -67,5 +69,14 @@ public class ProductController {
         productService.deleteProduct(productId);
 
         return Response.success(new DeleteProductResponse(productId));
+    }
+    private static final int DEFAULT_SIZE = 10;
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "커서 기반 조회 API", description = "커서 기반 조회 API")
+    @GetMapping(path="/cursor")
+    public Response<PageResponse<ViewProductListResponse>> getProducts(@RequestParam(required = false) Long cursorId, @RequestParam(required = false) Integer size) {
+        if (size == null) size = DEFAULT_SIZE;
+        PageResponse<ViewProductListResponse> productList = productService.get(cursorId, PageRequest.of(0, size));
+        return Response.success(productList);
     }
 }

@@ -13,5 +13,6 @@ public class ViewProductListResponse {
     private String mainImg;
     @NonNull
     private Long categoryId;
-
+    @NonNull
+    private Long productId;
 }
