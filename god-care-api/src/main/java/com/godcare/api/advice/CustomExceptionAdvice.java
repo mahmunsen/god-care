@@ -1,6 +1,6 @@
 package com.godcare.api.advice;
 
-import com.godcare.api.exception.product.ProductNotFoundException;
+import com.godcare.api.exception.ProductNotFoundException;
 import com.godcare.api.vo.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,6 +15,14 @@ public class CustomExceptionAdvice {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Response productNotFoundException() {
         return Response.fail("요청한 상품을 찾을 수 없습니다.");
+    }
+
+
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Response Exception() {
+        return Response.fail("응답이 실패했습니다.");
     }
 }
 
