@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class ProductV1 {
+public class ProductV0 {
     private Long id;
     private String mainImg;
     private Long categoryId;
@@ -16,11 +16,11 @@ public class ProductV1 {
     public void assignId(Long id) {
         this.id = id;
     }
-    public static ProductV1 from(ResisterProductRequest request) {
+    public static ProductV0 from(ResisterProductRequest request) {
         Long id = null;
         String mainImg = request.getMainImg();
         Long categoryId = request.getCategoryId();
-        return new ProductV1(id, mainImg, categoryId);
+        return new ProductV0(id, mainImg, categoryId);
     }
 
     public void update(String mainImg, Long categoryId) {
