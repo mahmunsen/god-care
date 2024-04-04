@@ -2,8 +2,9 @@ spring:
   config:
     activate:
       on-profile: prod
-    import:
-      -classpath: mysql.yml
+
+server:
+  port: 9080
 
   jpa:
     generate-ddl: 'false'

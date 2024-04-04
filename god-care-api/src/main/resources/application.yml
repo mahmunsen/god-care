@@ -1,6 +1,11 @@
 spring:
   profiles:
-    default: prod
+    default: local
+    group:
+      local:
+        mysql-local
+      prod:
+        mysql-prod
 
 jasypt:
   encryptor:
