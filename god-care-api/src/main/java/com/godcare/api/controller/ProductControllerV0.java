@@ -1,10 +1,10 @@
 package com.godcare.api.controller;
 
-import com.godcare.api.service.ProductService;
-import com.godcare.api.vo.PageResponse;
+import com.godcare.api.service.ProductServiceV0;
+import com.godcare.api.vo.PageResult;
 import com.godcare.common.dto.*;
 import com.godcare.api.vo.Response;
-import com.godcare.api.entity.Product;
+import com.godcare.api.entity.ProductV0;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -15,19 +15,18 @@ import org.springframework.data.domain.PageRequest;
 
 
 @RestController
-@RequestMapping("/api/v1/products")
+@RequestMapping("/api/v0/products")
 @RequiredArgsConstructor
-@Api(tags = "상품 API")
-public class ProductController {
+@Api(tags = "상품 버전0 API")
+public class ProductControllerV0 {
 
-    private final ProductService productService;
-
+    private final ProductServiceV0 productService;
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "상품 등록 API ", description = "새로운 상품을 업로드하는 API")
     @PostMapping(path = "")
     public Response<ResisterProductResponse> addProduct(@RequestBody ResisterProductRequest resisterProductRequest) {
 
-        Product savedProduct = productService.addProduct(resisterProductRequest);
+        ProductV0 savedProduct = productService.addProduct(resisterProductRequest);
 
         return Response.success(new ResisterProductResponse(savedProduct.getId()));
     }
@@ -56,7 +55,7 @@ public class ProductController {
     @PatchMapping(path = "/{product_id}")
     public Response<UpdateProductResponse> updateProduct(@PathVariable(value = "product_id") Long productId, @RequestBody UpdateProductRequest updateProductRequest) {
 
-        Product product = productService.updateProduct(productId, updateProductRequest);
+        ProductV0 product = productService.updateProduct(productId, updateProductRequest);
 
         return Response.success(new UpdateProductResponse(product.getId()));
     }
@@ -70,13 +69,15 @@ public class ProductController {
 
         return Response.success(new DeleteProductResponse(productId));
     }
+
     private static final int DEFAULT_SIZE = 10;
+
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "커서 기반 조회 API", description = "커서 기반 조회 API")
-    @GetMapping(path="/cursor")
-    public Response<PageResponse<ViewProductListResponse>> getProducts(@RequestParam(required = false) Long cursorId, @RequestParam(required = false) Integer size) {
+    @GetMapping(path = "/cursor")
+    public Response<PageResult<ViewProductListResponse>> getProducts(@RequestParam(required = false) Long cursorId, @RequestParam(required = false) Integer size) {
         if (size == null) size = DEFAULT_SIZE;
-        PageResponse<ViewProductListResponse> productList = productService.get(cursorId, PageRequest.of(0, size));
+        PageResult<ViewProductListResponse> productList = productService.get(cursorId, PageRequest.of(0, size));
         return Response.success(productList);
     }
 }
