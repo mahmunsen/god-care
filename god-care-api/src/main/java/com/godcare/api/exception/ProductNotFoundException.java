@@ -1,4 +1,4 @@
-package com.godcare.api.exception.product;
+package com.godcare.api.exception;
 
 public class ProductNotFoundException extends RuntimeException{
 }
