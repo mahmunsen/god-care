@@ -1,17 +1,21 @@
 package com.godcare.api.config;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jasypt.encryption.StringEncryptor;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
 import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
+@Getter
+@RequiredArgsConstructor
+@ConfigurationProperties
+@ConstructorBinding
 public class JasyptConfig {
 
-    @Value("${secret-key-source}")
-    private String secretKeySource;
+    private final String secretKeySource;
 
     @Bean(name = "jasyptStringEncryptor")
     public StringEncryptor stringEncryptor() {

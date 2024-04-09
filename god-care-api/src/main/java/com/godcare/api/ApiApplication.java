@@ -1,9 +1,14 @@
 package com.godcare.api;
 
+import com.godcare.api.config.BucketConfig;
+import com.godcare.api.config.JasyptConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-
+@Configuration
+@EnableConfigurationProperties({BucketConfig.class, JasyptConfig.class})
 @SpringBootApplication(scanBasePackages = {"com.godcare.api", "com.godcare.common"})
 public class ApiApplication {
 
