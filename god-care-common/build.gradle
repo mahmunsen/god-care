@@ -1,12 +1,22 @@
-plugins {
-    id 'io.freefair.lombok' version '8.6'
-    id 'java-library'
-}
+    plugins {
+        id 'io.freefair.lombok' version '8.6'
+        id 'io.spring.dependency-management' version '1.1.4'
+        id 'java-library'
+    }
 
-repositories {
-    mavenCentral()
-}
+    repositories {
+        mavenCentral()
+    }
 
-dependencies {
-    implementation 'org.slf4j:slf4j-api:1.7.31'
-}
+    dependencyManagement {
+        imports {
+            'org.springframework.boot:spring-boot-dependencies:3.1.0'
+        }
+    }
+
+    dependencies {
+        implementation 'io.springfox:springfox-boot-starter:3.0.0' // 스웨거에서 @ApiModelProperty 사용하려고
+        implementation 'javax.validation:validation-api:2.0.1.Final' // javax 1.1.0.Final은 @NotBlank가 없다.
+        implementation 'org.slf4j:slf4j-api:1.7.31'
+        implementation 'org.springframework.boot:spring-boot-autoconfigure:2.7.15' // 스프링 어노테이션 사용
+    }
