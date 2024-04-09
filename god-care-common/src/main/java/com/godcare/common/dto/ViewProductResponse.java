@@ -1,18 +1,21 @@
 package com.godcare.common.dto;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+import java.math.BigDecimal;
 
-@RequiredArgsConstructor
+@Schema(description = "특정 상품 조회 DTO")
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 public class ViewProductResponse {
 
-    @NonNull
     private Long productId;
-    @NonNull
     private String mainImg;
-    @NonNull
     private Long categoryId;
-
+    private String categoryName;
+    private String name;
+    private BigDecimal price;
+    private Integer quantity;
+    private Boolean anyOptions;
 }
