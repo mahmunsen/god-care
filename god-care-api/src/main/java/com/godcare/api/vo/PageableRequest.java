@@ -16,7 +16,7 @@ public class PageableRequest {
 
     @ApiModelProperty(value = "커서 100", example = "100")
     @Setter
-    private Long cursor;
+    private String cursor;
 
     @ApiModelProperty(value = "페이지 번호 0 ", example = "0")
     private Integer page;
@@ -30,8 +30,9 @@ public class PageableRequest {
         return PageRequest.of(page, size, Sort.Direction.ASC, "id");
     }
 
-    public Long getCursor() {
-        if (cursor == null) return Long.MAX_VALUE;
+    public String getCursor() {
+//        if (cursor == null) return Long.MAX_VALUE;
+        if (cursor == null) return null;
         return cursor;
     }
 
