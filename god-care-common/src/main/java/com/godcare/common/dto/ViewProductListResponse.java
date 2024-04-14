@@ -9,12 +9,13 @@ import java.math.BigDecimal;
 @Getter
 public class ViewProductListResponse {
 
-    private String mainImg;
-    private Long categoryId;
-    private Long productId;
-    private String productName;
-    private BigDecimal price;
-    private Integer quantity;
-    private Boolean anyOptions;
+    private final String mainImg;
+    private final Long categoryId;
+    private final Long productId;
+    private final String productName;
+    private final BigDecimal price;
+    private final Integer quantity;
+    private final Boolean anyOptions;
+    private final String timeUpdated;
 
 }

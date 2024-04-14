@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
-
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
@@ -44,7 +43,7 @@ public class ProductController {
 
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "상품 전체 조회 API ", description = "전체 상품 조회하는 API")
-    @GetMapping(path = "/cursorTest")
+    @GetMapping(path = "")
     public Response<PageResponse<ViewProductListResponse>> getProductListTwo(@ApiParam(value = "정렬 기준") @RequestParam(value = "order", required = false) String order, PageableRequest pageable) {
         PageResponse<ViewProductListResponse> productList = productService.getProductsList(order, pageable);
         return Response.success(productList);
