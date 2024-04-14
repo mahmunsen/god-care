@@ -11,6 +11,7 @@ import com.godcare.api.exception.ProductNotFoundException;
 import com.godcare.api.repository.CategoryRepository;
 import com.godcare.api.repository.EmProductRepository;
 import com.godcare.api.repository.ProductRepository;
+import com.godcare.api.util.DateUtils;
 import com.godcare.api.vo.PageableRequest;
 import com.godcare.api.vo.PageResponse;
 import com.godcare.common.dto.*;
@@ -65,7 +66,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    // 상품삭제
+    // 상품 삭제
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException());
         productRepository.deleteById(product.getId());
@@ -118,7 +119,7 @@ public class ProductService {
                 break;
         }
 
-        List<ViewProductListResponse> viewProductListResponses = products.stream().map(product -> new ViewProductListResponse(product.getMainImg(), product.getCategory().getId(), product.getId(), product.getName(), product.getPrice(), product.getQuantity(), product.getAnyOptions())).collect(Collectors.toList());
+        List<ViewProductListResponse> viewProductListResponses = products.stream().map(product -> new ViewProductListResponse(product.getMainImg(), product.getCategory().getId(), product.getId(), product.getName(), product.getPrice(), product.getQuantity(), product.getAnyOptions(), DateUtils.convertToString(product.getTimeUpdated(), DateUtils.yearMonthDayHourMinuteSecond))).collect(Collectors.toList());
 
         getCursorId(pageable, products);
 
@@ -126,6 +127,6 @@ public class ProductService {
     }
 
     private void getCursorId(PageableRequest pageable, List<Product> products) {
-        if (products.size() > 0) pageable.setCursor(products.get(products.size() - 1).getId());
+        if (products.size() > 0) pageable.setCursor(String.valueOf(products.get(products.size() - 1).getId()));
     }
 }
