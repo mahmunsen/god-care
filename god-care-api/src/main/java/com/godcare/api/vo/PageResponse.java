@@ -9,7 +9,7 @@ import java.util.List;
 public class PageResponse<T> {
 
     private List<T> content;
-    private long cursor;
+    private String cursor;
     private int size;
     private boolean isEnd;
 
