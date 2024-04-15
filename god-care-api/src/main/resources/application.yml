@@ -7,7 +7,16 @@ spring:
       prod:
         mysql-prod
 
+  servlet:
+    multipart:
+      maxFileSize: 10MB # 파일 하나의 최대 크기
+      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+
 jasypt:
   encryptor:
     bean: jasyptStringEncryptor
 secret-key-source: ${SECRET_KEY_SOURCE}
+
+spring.s3.accessKey: ENC(o8c0iXx+PrmNPTAiRLh/uPC31KDDfOajU8/8Hakt844=)
+spring.s3.secretKey: ENC(Gy0KvQIKx3PqrVd+AMAWdjnk5vbs5+gudvyqqasKl98IvX/Mc8ykbk7A8PwmGzIHUZNS1T6RpeI=)
+spring.s3.bucket: god-care
