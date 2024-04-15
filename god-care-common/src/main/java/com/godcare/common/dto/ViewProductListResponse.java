@@ -1,18 +1,20 @@
 package com.godcare.common.dto;
 
-
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+import java.math.BigDecimal;
+
+@AllArgsConstructor
 @Getter
 public class ViewProductListResponse {
 
-    @NonNull
     private String mainImg;
-    @NonNull
     private Long categoryId;
-    @NonNull
     private Long productId;
+    private String productName;
+    private BigDecimal price;
+    private Integer quantity;
+    private Boolean anyOptions;
+
 }
