@@ -27,10 +27,6 @@ public class Product {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Lob
-    @Column(name = "main_img")
-    private String mainImg;
-
     @Column(name = "name")
     private String name;
 
@@ -59,9 +55,8 @@ public class Product {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    public static Product from(ResisterProductRequest request, Category category, FileResponse file) {
+    public static Product from(ResisterProductRequest request, Category category) {
         Long id = null;
-        String mainImg = file.getUploadFileUrl();
         String name = request.getName();
         BigDecimal price = request.getPrice();
         Integer quantity = request.getQuantity();
@@ -70,11 +65,11 @@ public class Product {
         Instant timeCreated = Instant.now();
         Instant timeUpdated = Instant.now();
         Boolean isDeleted = false;
-        return new Product(id, mainImg, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted);
+        return new Product(id, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted);
     }
 
     public void update(FileResponse file, Category category, UpdateProductRequest request) {
-        this.mainImg = (file!= null) ? file.getUploadFileUrl() : this.mainImg;
+//        this.mainImg = (file!= null) ? file.getUploadFileUrl() : this.mainImg;
         this.category = (category != null) ? category : this.category;
         this.timeUpdated = Instant.now();
         this.name = (request.getName() != null) ? request.getName() : this.name;

@@ -1,26 +1,35 @@
 package com.godcare.api.service;
 
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.godcare.api.advice.annotation.TimeTrace;
+import com.godcare.api.exception.FileUploadFailedException;
 import com.godcare.common.dto.FileResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class FileService {
 
-    private final AmazonS3Client amazonS3Client;
+    private final S3AsyncClient s3AsyncClient;
 
     @Value("${spring.s3.bucket}")
     private String bucketName;
@@ -31,36 +40,60 @@ public class FileService {
     }
 
     // 이미지 파일 업로드
-    public FileResponse uploadFile(MultipartFile multipartFile, String filePath) {
+    @TimeTrace
+    public List<FileResponse> uploadFiles(List<MultipartFile> multipartFiles, String filePath) throws IOException {
 
-        String originalFileName = multipartFile.getOriginalFilename();
-        String uploadFileName = getNewFileName(originalFileName);
-        String uploadFileUrl = "";
+        List<FileResponse> fileResponseList = new ArrayList<>();
 
-        ObjectMetadata objectMetadata = getObjectMetadata(multipartFile);
+        for (MultipartFile multipartFile : multipartFiles) {
 
-        return getFileResponse(multipartFile, filePath, originalFileName, uploadFileName, uploadFileUrl, objectMetadata);
-    }
+            String originalFileName = multipartFile.getOriginalFilename();
+            String uploadFileName = getNewFileName(originalFileName);
+            String uploadFileUrl = "";
 
-    private FileResponse getFileResponse(MultipartFile multipartFile, String filePath, String originalFileName, String uploadFileName, String uploadFileUrl, ObjectMetadata objectMetadata) {
-        try (InputStream inputStream = multipartFile.getInputStream()) {
+            ObjectMetadata objectMetadata = getObjectMetadata(multipartFile);
+
+            Map<String, String> metadata = new java.util.HashMap<>(Map.of("filename", multipartFile.getName()));
 
             String keyName = filePath + "/" + uploadFileName;
 
             // S3에 폴더 및 파일 업로드
-            // withCannedAcl 로 publicRead로 바꿔주면 url로 접속시 바로 사진이 전체공개된다.
-            amazonS3Client.putObject(
-                    new PutObjectRequest(bucketName, keyName, inputStream, objectMetadata)
-                            .withCannedAcl(CannedAccessControlList.PublicRead));
+            software.amazon.awssdk.services.s3.model.PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .metadata(metadata)
+                    .acl(String.valueOf(CannedAccessControlList.PublicRead))
+                    .key(keyName)
+                    .contentLength(objectMetadata.getContentLength())
+                    .contentType(objectMetadata.getContentType())
+                    .build();
+
+            // S3에 폴더 및 파일 업로드
+
+            ByteBuffer byteBuffer = ByteBuffer.wrap(multipartFile.getBytes());
+
+            CompletableFuture<PutObjectResponse> future = s3AsyncClient.putObject(putObjectRequest, AsyncRequestBody.fromByteBuffer(byteBuffer));
+
+            future.whenComplete((resp, err) -> {
+                try {
+                    if (resp != null) {
+                        System.out.println("Object uploaded. Details: " + resp);
+                    } else {
+                        err.printStackTrace();
+                        throw new FileUploadFailedException();
+                    }
+                } finally {
+                    s3AsyncClient.close();
+                }
+            });
 
             // S3에 업로드한 폴더 및 파일 URL
             uploadFileUrl = "https://kr.object.ncloudstorage.com/" + bucketName + "/" + keyName;
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            fileResponseList.add(new FileResponse(originalFileName, uploadFileName, filePath, uploadFileUrl));
         }
-        return new FileResponse(originalFileName, uploadFileName, filePath, uploadFileUrl);
+        return fileResponseList;
     }
+
 
     // 이미지 파일 업데이트
     public FileResponse updateFile(MultipartFile multipartFile, String filePath, String imgToDelete) {
