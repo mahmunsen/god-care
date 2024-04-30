@@ -52,7 +52,7 @@ public class Product {
     private Instant timeCreated;
 
     @UpdateTimestamp
-    @Column(name = "time_updated", insertable = false)
+    @Column(name = "time_updated", nullable = false)
     private Instant timeUpdated;
 
     @ColumnDefault(value = "false")
@@ -68,8 +68,9 @@ public class Product {
         Boolean anyOptions = request.getAnyOptions();
         Category cat = category;
         Instant timeCreated = Instant.now();
+        Instant timeUpdated = Instant.now();
         Boolean isDeleted = false;
-        return new Product(id, mainImg, name, price, quantity, anyOptions, cat, timeCreated, null, isDeleted);
+        return new Product(id, mainImg, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted);
     }
 
     public void update(FileResponse file, Category category, UpdateProductRequest request) {
