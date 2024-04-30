@@ -29,10 +29,7 @@ public class ProductController {
     @PostMapping(path = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CompletableFuture<Response<ResisterProductResponse>> addProduct(@ModelAttribute ResisterProductRequest resisterProductRequest, @ApiParam(value = "메인 이미지 파일") @RequestPart(value = "mainImgs", required = true) List<MultipartFile> mainImgs) {
 
-        return CompletableFuture.supplyAsync(() -> {
-            Product savedProduct = productService.addProduct(resisterProductRequest, mainImgs);
-            return Response.success(new ResisterProductResponse(savedProduct.getId()));
-        });
+        return productService.addProduct(resisterProductRequest, mainImgs).thenApply((product) -> Response.success(new ResisterProductResponse(product.getId())));
     }
 
     @ResponseStatus(HttpStatus.OK)
