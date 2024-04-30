@@ -13,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -25,11 +27,12 @@ public class ProductController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "상품 등록 API ", description = "새로운 상품을 업로드하는 API")
     @PostMapping(path = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Response<ResisterProductResponse> addProduct(@ModelAttribute ResisterProductRequest resisterProductRequest, @ApiParam(value = "메인 이미지 파일") @RequestPart(value = "mainImg", required = true) MultipartFile mainImg) {
+    public CompletableFuture<Response<ResisterProductResponse>> addProduct(@ModelAttribute ResisterProductRequest resisterProductRequest, @ApiParam(value = "메인 이미지 파일") @RequestPart(value = "mainImgs", required = true) List<MultipartFile> mainImgs) {
 
-        Product savedProduct = productService.addProduct(resisterProductRequest, mainImg);
-
-        return Response.success(new ResisterProductResponse(savedProduct.getId()));
+        return CompletableFuture.supplyAsync(() -> {
+            Product savedProduct = productService.addProduct(resisterProductRequest, mainImgs);
+            return Response.success(new ResisterProductResponse(savedProduct.getId()));
+        });
     }
 
     @ResponseStatus(HttpStatus.OK)
