@@ -18,6 +18,7 @@ import com.godcare.api.vo.PageableRequest;
 import com.godcare.api.vo.PageResponse;
 import com.godcare.common.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,37 +45,25 @@ public class ProductService {
     // 상품 등록
     @TimeTrace
     @Transactional
-    public Product addProduct(ResisterProductRequest request, List<MultipartFile> mainImgs) {
+    public CompletableFuture<Product> addProduct(ResisterProductRequest request, List<MultipartFile> mainImgs) {
 
-        // 작업 a
-        CompletableFuture<Category> categoryFuture = CompletableFuture.supplyAsync(() ->
-                categoryRepository.findById(request.getCategoryId())
-                        .orElseThrow(() -> new CategoryNotFoundException()), threadPoolTaskExecutor);
+        CompletableFuture<Product> productFuture = CompletableFuture
+                .supplyAsync(() -> categoryRepository.findById(request.getCategoryId())
+                        .orElseThrow(() -> new CategoryNotFoundException()), threadPoolTaskExecutor)
+                .thenApplyAsync(category ->
+                        productRepository.save(Product.from(request, category)), threadPoolTaskExecutor);
 
-        // 작업 b -> b1
-        CompletableFuture<String> filePathFuture = CompletableFuture.supplyAsync(() -> FilePath.PRODUCT_DIR.getPath());
-        CompletableFuture<List<FileResponse>> filesFuture = filePathFuture.thenApplyAsync(filePath -> getFileUrls(mainImgs, filePath), threadPoolTaskExecutor);
+        CompletableFuture<Product> result = CompletableFuture
+                .supplyAsync(FilePath.PRODUCT_DIR::getPath)
+                .thenApplyAsync(filePath -> getFileUrls(mainImgs, filePath), threadPoolTaskExecutor)
+                .thenCombineAsync(productFuture, (files, product) -> {
+                    files.parallelStream()
+                            .map(fileResponse -> ProductPhoto.from(fileResponse, product))
+                            .forEach(productPhotoRepository::save);
+                    return product;
+                });
 
-        // 작업 a -> c
-        CompletableFuture<Product> productFuture = categoryFuture.thenApplyAsync(category ->
-                productRepository.save(Product.from(request, category)), threadPoolTaskExecutor
-        );
-
-        // b1, c -> b2
-        CompletableFuture<List<ProductPhoto>> productPhotoFuture = filesFuture
-                .thenCombineAsync(productFuture, (files, product) -> files
-                        .parallelStream()
-                        .map(fileResponse -> ProductPhoto.from(fileResponse, product))
-                        .collect(Collectors.toList()), threadPoolTaskExecutor)
-                .thenApply((productPhotos) ->
-                        productPhotoRepository.saveAll(productPhotos)
-                );
-
-        CompletableFuture<Product> combinedFuture = CompletableFuture.allOf(categoryFuture, productPhotoFuture, productFuture)
-                .thenApplyAsync(v -> productFuture.join(), threadPoolTaskExecutor);
-
-        // 모든 작업이 완료될 때까지 대기하고 최종 product 반환
-        return combinedFuture.join();
+        return result;
     }
 
         // 특정 상품 조회
