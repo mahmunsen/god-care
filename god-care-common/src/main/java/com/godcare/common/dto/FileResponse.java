@@ -11,4 +11,6 @@ public class FileResponse {
     private String uploadFileName;
     private String uploadFilePath;
     private String uploadFileUrl;
+    private String uploadId;
+//    private String eTag;
 }
