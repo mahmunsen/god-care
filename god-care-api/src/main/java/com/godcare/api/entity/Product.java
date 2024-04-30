@@ -65,6 +65,7 @@ public class Product {
         Instant timeCreated = Instant.now();
         Instant timeUpdated = Instant.now();
         Boolean isDeleted = false;
+      
         return new Product(id, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted);
     }
 
