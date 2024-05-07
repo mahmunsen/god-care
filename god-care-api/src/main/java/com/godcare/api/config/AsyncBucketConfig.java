@@ -1,5 +1,10 @@
 package com.godcare.api.config;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,14 +23,15 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class AsyncBucketConfig {
 
-    private final AsyncBucketProperties asyncBucketProperties;
+    private final BucketProperties bucketProperties;
+
     @Bean
     public S3AsyncClient s3AsyncClient() {
         return S3AsyncClient.builder()
                 .httpClient(sdkAsyncHttpClient())
-                .region(Region.of(asyncBucketProperties.getRegionName()))
+                .region(Region.of(bucketProperties.getRegionName()))
                 .credentialsProvider(awsCredentialsProvider())
-                .endpointOverride(URI.create(asyncBucketProperties.getEndPoint()))
+                .endpointOverride(URI.create(bucketProperties.getEndPoint()))
                 .forcePathStyle(true)
                 .serviceConfiguration(s3Configuration()).build();
     }
@@ -45,6 +51,6 @@ public class AsyncBucketConfig {
     }
 
     private AwsCredentialsProvider awsCredentialsProvider() {
-        return () -> AwsBasicCredentials.create(asyncBucketProperties.getAccessKey(), asyncBucketProperties.getSecretKey());
+        return () -> AwsBasicCredentials.create(bucketProperties.getAccessKey(), bucketProperties.getSecretKey());
     }
 }
