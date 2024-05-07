@@ -10,8 +10,7 @@ public class TaskConfig {
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(Runtime.getRuntime().availableProcessors()); // 최소 스레드 수
-//        taskExecutor.setCorePoolSize(30);
-        taskExecutor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());  // 최대 스레드 수
+        taskExecutor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 2);  // 최대 스레드 수
         taskExecutor.setQueueCapacity(10);
         taskExecutor.setThreadNamePrefix("Executor-");
         taskExecutor.initialize();
