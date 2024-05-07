@@ -47,10 +47,10 @@ public class ProductPhoto {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    public static ProductPhoto from(FileResponse file, Product product) {
+    public static ProductPhoto from(String origName, String imageUrl, Product product) {
         Long id = null;
-        String originalName = file.getOriginalFileName();
-        String imgUrl = file.getUploadFileUrl();
+        String originalName = origName;
+        String imgUrl = imageUrl;
         Product pro = product;
         Instant timeCreated = Instant.now();
         Instant timeUpdated = null;
