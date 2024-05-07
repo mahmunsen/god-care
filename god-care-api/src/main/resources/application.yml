@@ -23,6 +23,4 @@ aws:
   bucketName: god-care
   regionName: kr-standard
   endpoint: https://kr.object.ncloudstorage.com
-  multipart-min-part-size: 5242880 # 5MB
-
 
