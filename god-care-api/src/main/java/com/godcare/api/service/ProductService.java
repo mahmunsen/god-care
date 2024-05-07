@@ -1,6 +1,7 @@
 package com.godcare.api.service;
 
 import com.godcare.api.advice.annotation.TimeTrace;
+import com.godcare.api.controller.ProductController;
 import com.godcare.api.entity.Category;
 import com.godcare.api.entity.Product;
 import com.godcare.api.entity.ProductPhoto;
@@ -14,6 +15,7 @@ import com.godcare.api.repository.EmProductRepository;
 import com.godcare.api.repository.ProductPhotoRepository;
 import com.godcare.api.repository.ProductRepository;
 import com.godcare.api.util.DateUtils;
+import com.godcare.api.util.FileUtils;
 import com.godcare.api.vo.PageableRequest;
 import com.godcare.api.vo.PageResponse;
 import com.godcare.common.dto.*;
@@ -25,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
@@ -45,25 +49,24 @@ public class ProductService {
     // 상품 등록
     @TimeTrace
     @Transactional
-    public CompletableFuture<Product> addProduct(ResisterProductRequest request, List<MultipartFile> mainImgs) {
+    public CompletableFuture<Product> addProduct(ResisterProductRequest request) {
 
         CompletableFuture<Product> productFuture = CompletableFuture
                 .supplyAsync(() -> categoryRepository.findById(request.getCategoryId())
                         .orElseThrow(() -> new CategoryNotFoundException()), threadPoolTaskExecutor)
                 .thenApplyAsync(category ->
-                        productRepository.save(Product.from(request, category)), threadPoolTaskExecutor);
-
-        CompletableFuture<Product> result = CompletableFuture
-                .supplyAsync(FilePath.PRODUCT_DIR::getPath)
-                .thenApplyAsync(filePath -> getFileUrls(mainImgs, filePath), threadPoolTaskExecutor)
-                .thenCombineAsync(productFuture, (files, product) -> {
-                    files.parallelStream()
-                            .map(fileResponse -> ProductPhoto.from(fileResponse, product))
-                            .forEach(productPhotoRepository::save);
+                        productRepository.save(Product.from(request, category)), threadPoolTaskExecutor)
+                .thenApplyAsync(product -> {
+                    List<Map<String, String>> photos = request.getProductPhotos();
+                    photos.stream().map(photo -> {
+                        String originalName = photo.get("originalName");
+                        String imageUrl = photo.get("url");
+                        ProductPhoto productPhoto = ProductPhoto.from(originalName, imageUrl, product);
+                        return productPhoto;
+                    }).forEach(productPhotoRepository::save);
                     return product;
                 });
-
-        return result;
+        return productFuture;
     }
 
         // 특정 상품 조회
