@@ -11,7 +11,6 @@ import com.godcare.api.config.BucketProperties;
 import com.godcare.api.entity.FileStatus;
 import com.godcare.api.enums.FilePath;
 import com.godcare.api.exception.FileUploadFailedException;
-import com.godcare.api.util.FileUtils;
 import com.godcare.common.dto.FileResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,17 +41,17 @@ public class FileService {
         List<FileResponse> fileResponseList = new ArrayList<>();
         for(MultipartFile multipartFile: multipartFiles) {
             String originalFileName = multipartFile.getOriginalFilename();
-            String filePath = FilePath.PRODUCT_DIR.getPath();
             String fileName = getNewFileName(originalFileName);
+            String filePath = FilePath.PRODUCT_DIR.getPath();
             String keyName = filePath + "/" + fileName;
-            String uploadFileUrl = "https://kr.object.ncloudstorage.com/" + bucketProperties.getBucketName() + "/" + keyName;
             GeneratePresignedUrlRequest generatePresignedUrlRequest = getGeneratePreSignedUrlRequest(bucketProperties.getBucketName(), keyName);
             URL url = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
             url.toString();
-            fileResponseList.add(new FileResponse(originalFileName, fileName, filePath, uploadFileUrl, url));
+            fileResponseList.add(new FileResponse(originalFileName, fileName, url));
         }
         return fileResponseList;
     }
+
     /**
      * 파일 업로드용(PUT) presigned url 생성
      *
