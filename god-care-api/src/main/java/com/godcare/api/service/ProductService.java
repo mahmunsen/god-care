@@ -1,6 +1,7 @@
 package com.godcare.api.service;
 
 import com.godcare.api.advice.annotation.TimeTrace;
+import com.godcare.api.config.BucketProperties;
 import com.godcare.api.controller.ProductController;
 import com.godcare.api.entity.Category;
 import com.godcare.api.entity.Product;
@@ -15,7 +16,6 @@ import com.godcare.api.repository.EmProductRepository;
 import com.godcare.api.repository.ProductPhotoRepository;
 import com.godcare.api.repository.ProductRepository;
 import com.godcare.api.util.DateUtils;
-import com.godcare.api.util.FileUtils;
 import com.godcare.api.vo.PageableRequest;
 import com.godcare.api.vo.PageResponse;
 import com.godcare.common.dto.*;
@@ -26,8 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -42,6 +44,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final EmProductRepository emProductRepository;
     private final FileService fileService;
+    private final BucketProperties bucketProperties;
     private final ProductRepository productRepository;
     private final ProductPhotoRepository productPhotoRepository;
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
@@ -60,7 +63,8 @@ public class ProductService {
                     List<Map<String, String>> photos = request.getProductPhotos();
                     photos.stream().map(photo -> {
                         String originalName = photo.get("originalName");
-                        String imageUrl = photo.get("url");
+                        String fileName = photo.get("fileName");
+                        String imageUrl = "https://kr.object.ncloudstorage.com/" + bucketProperties.getBucketName() + "/" + FilePath.PRODUCT_DIR.getPath() + "/" + fileName;
                         ProductPhoto productPhoto = ProductPhoto.from(originalName, imageUrl, product);
                         return productPhoto;
                     }).forEach(productPhotoRepository::save);
@@ -144,5 +148,10 @@ public class ProductService {
 
     private void getCursorId(PageableRequest pageable, List<Product> products) {
         if (products.size() > 0) pageable.setCursor(String.valueOf(products.get(products.size() - 1).getId()));
+    }
+
+    public String getNewFileName(String fileName) {
+        String ext = fileName.substring(fileName.indexOf(".") + 1);
+        return String.valueOf(Instant.now()) + UUID.randomUUID() + "." + ext;
     }
 }
