@@ -11,7 +11,5 @@ import java.net.URL;
 public class FileResponse {
     private String originalFileName;
     private String uploadFileName;
-    private String uploadFilePath;
-    private String uploadFileUrl;
     private URL presingedUrl;
 }
