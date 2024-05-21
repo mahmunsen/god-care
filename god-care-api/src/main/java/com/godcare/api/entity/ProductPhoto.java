@@ -1,16 +1,17 @@
 package com.godcare.api.entity;
 
-import com.godcare.common.dto.FileResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.Instant;
 
+@SQLDelete(sql = "UPDATE product SET is_deleted = true WHERE id = ?")
 @Table(name = "product_photo")
 @Entity
 @AllArgsConstructor
