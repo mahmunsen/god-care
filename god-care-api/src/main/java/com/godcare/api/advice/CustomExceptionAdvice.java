@@ -35,6 +35,12 @@ public class CustomExceptionAdvice {
         return Response.fail("물품의 정렬 타입을 찾을 수 없습니다.");
     }
 
+    @ExceptionHandler(ProductPhotoNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response productPhotoNotFoundException() {
+        return Response.fail("물품의 이미지를 찾을 수 없습니다.");
+    }
+
     @ExceptionHandler(FileUploadFailedException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Response fileUploadFailedException() {
