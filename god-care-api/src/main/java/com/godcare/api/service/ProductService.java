@@ -11,6 +11,7 @@ import com.godcare.api.enums.ProductSortType;
 import com.godcare.api.exception.CategoryNotFoundException;
 import com.godcare.api.exception.FileUploadFailedException;
 import com.godcare.api.exception.ProductNotFoundException;
+import com.godcare.api.exception.ProductPhotoNotFoundException;
 import com.godcare.api.repository.CategoryRepository;
 import com.godcare.api.repository.EmProductRepository;
 import com.godcare.api.repository.ProductPhotoRepository;
@@ -49,7 +50,11 @@ public class ProductService {
     private final ProductPhotoRepository productPhotoRepository;
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
-    // 상품 등록
+    /**
+     * 상품 등록
+     *
+     * @param request 상품 등록 요청 DTO
+     */
     @TimeTrace
     @Transactional
     public CompletableFuture<Product> addProduct(ResisterProductRequest request) {
@@ -62,10 +67,10 @@ public class ProductService {
                 .thenApplyAsync(product -> {
                     List<Map<String, String>> photos = request.getProductPhotos();
                     photos.stream().map(photo -> {
-                        String originalName = photo.get("originalName");
-                        String fileName = photo.get("fileName");
-                        String imageUrl = "https://kr.object.ncloudstorage.com/" + bucketProperties.getBucketName() + "/" + FilePath.PRODUCT_DIR.getPath() + "/" + fileName;
-                        ProductPhoto productPhoto = ProductPhoto.from(originalName, imageUrl, product);
+                        String originalFileName = photo.get("originalFileName");
+                        String uploadFileName = photo.get("uploadFileName");
+                        String imageUrl = "https://kr.object.ncloudstorage.com/" + bucketProperties.getBucketName() + "/" + FilePath.PRODUCT_DIR.getPath() + "/" + uploadFileName;
+                        ProductPhoto productPhoto = ProductPhoto.from(originalFileName, imageUrl, product);
                         return productPhoto;
                     }).forEach(productPhotoRepository::save);
                     return product;
@@ -73,12 +78,32 @@ public class ProductService {
         return productFuture;
     }
 
-        // 특정 상품 조회
-    public ViewProductResponse getProduct(Long productId) {
-        Product product = productRepository.findByIdAndIsDeletedFalse(productId).orElseThrow(() -> new ProductNotFoundException());
-        Category category = categoryRepository.findById(product.getCategory().getId()).orElseThrow(() -> new CategoryNotFoundException());
-        return new ViewProductResponse(product.getId(), product.getMainImg(), category.getId(), category.getCategoryName(), product.getName(), product.getPrice(), product.getQuantity(), product.getAnyOptions());
+    /**
+     * 특정 상품 상세 조회
+     *
+     * @param productId 상세 조회할 상품 ID
+     */
+    public CompletableFuture<ViewProductResponse> getProduct(Long productId) {
+        CompletableFuture<Product> productFuture = CompletableFuture.supplyAsync(() -> {
+            Product product = productRepository.findByIdAndIsDeletedFalse(productId).orElseThrow(() -> new ProductNotFoundException());
+            return product;
+        });
+
+        CompletableFuture<List<String>> photoUrlsFuture = productFuture.thenApplyAsync((product) -> {
+            List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductAndIsDeletedFalse(product).orElseThrow(() -> new ProductPhotoNotFoundException());
+            List<String> photoUrls = productPhotos.parallelStream().map(ProductPhoto::getImgUrl).collect(Collectors.toList());
+            return photoUrls;
+        });
+
+        CompletableFuture<ViewProductResponse> viewProductResponseFuture = productFuture.thenCombine(photoUrlsFuture, (product, photoUrls) -> {
+            Category category = categoryRepository.findById(product.getCategory().getId()).orElseThrow(() -> new CategoryNotFoundException());
+            return new ViewProductResponse(product.getId(), photoUrls, category.getId(), category.getCategoryName(), product.getName(), product.getPrice(), product.getQuantity(), product.getAnyOptions());
+        });
+
+        return viewProductResponseFuture;
     }
+
+
 
     // 상품 수정
     @Transactional
@@ -139,7 +164,14 @@ public class ProductService {
                 break;
         }
 
-        List<ViewProductListResponse> viewProductListResponses = products.stream().map(product -> new ViewProductListResponse(product.getMainImg(), product.getCategory().getId(), product.getId(), product.getName(), product.getPrice(), product.getQuantity(), product.getAnyOptions(), DateUtils.convertToString(product.getTimeUpdated(), DateUtils.yearMonthDayHourMinuteSecond))).collect(Collectors.toList());
+        List<ViewProductListResponse> viewProductListResponses = products.stream()
+                .map(product -> {
+                    List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductAndIsDeletedFalse(product).orElseThrow(() -> new ProductPhotoNotFoundException());
+                    List<String> imgUrls = productPhotos.stream().map(ProductPhoto::getImgUrl).collect(Collectors.toList());
+
+                    return new ViewProductListResponse(imgUrls, product.getCategory().getId(), product.getId(), product.getName(), product.getPrice(), product.getQuantity(), product.getAnyOptions(), DateUtils.convertToString(product.getTimeUpdated(), DateUtils.yearMonthDayHourMinuteSecond));
+                })
+                .collect(Collectors.toList());
 
         getCursorId(pageable, products);
 
