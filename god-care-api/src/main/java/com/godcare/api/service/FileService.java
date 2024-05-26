@@ -2,24 +2,29 @@ package com.godcare.api.service;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.Headers;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.*;
 import com.godcare.api.config.BucketProperties;
 import com.godcare.api.enums.FilePath;
+import com.godcare.api.exception.FileAlreadyExistsException;
+import com.godcare.api.exception.FileUploadFailedException;
 import com.godcare.common.dto.FileResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,70 +36,24 @@ public class FileService {
     private final BucketProperties bucketProperties;
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
-//    public List<CompletableFuture<FileResponse>> getPresignedUrls(List<MultipartFile> multipartFiles) {
-//        List<CompletableFuture<FileResponse>> fileResponseList = new ArrayList<>();
-//        for (MultipartFile multipartFile : multipartFiles) {
-//            String originalFileName = multipartFile.getOriginalFilename();
-//            String fileName = getNewFileName(originalFileName);
-//            String filePath = FilePath.PRODUCT_DIR.getPath();
-//            String keyName = filePath + "/" + fileName;
-//
-//            CompletableFuture<FileResponse> fileResponse = CompletableFuture.supplyAsync(() ->
-//                            getGeneratePreSignedUrlRequest(bucketProperties.getBucketName(), keyName))
-//                    .thenApplyAsync(generatePresignedUrlRequest -> amazonS3.generatePresignedUrl(generatePresignedUrlRequest), threadPoolTaskExecutor)
-//                    .thenApplyAsync(url -> {
-//                        log.info(threadPoolTaskExecutor.toString());
-//                        log.info("thread: %name", Thread.currentThread().getName());
-//                        log.info("이 일을 처리하고 있는 녀석은?");
-//                        return new FileResponse(originalFileName, fileName, url.toString());
-//                    }, threadPoolTaskExecutor);
-//            fileResponseList.add(fileResponse);
-//        }
-//        return fileResponseList;
-//    }
+    public CompletableFuture<List<FileResponse>> getPresignedUrls(List<String> uploadFileNames) {
 
+        String filePath = FilePath.PRODUCT_DIR.getPath();
 
-//    public CompletableFuture<List<CompletableFuture<FileResponse>>> getPresignedUrls(List<MultipartFile> multipartFiles) {
-//        CompletableFuture<List<CompletableFuture<FileResponse>>> fileResponseList = CompletableFuture.supplyAsync(() -> {
-//            List<CompletableFuture<FileResponse>> fileRes = new ArrayList<>();
-//            for (MultipartFile multipartFile : multipartFiles) {
-//                String originalFileName = multipartFile.getOriginalFilename();
-//                String fileName = getNewFileName(originalFileName);
-//                String filePath = FilePath.PRODUCT_DIR.getPath();
-//                String keyName = filePath + "/" + fileName;
-//
-//                CompletableFuture<FileResponse> fileResponse = CompletableFuture.supplyAsync(() ->
-//                                getGeneratePreSignedUrlRequest(bucketProperties.getBucketName(), keyName))
-//                        .thenApplyAsync(generatePresignedUrlRequest -> amazonS3.generatePresignedUrl(generatePresignedUrlRequest), threadPoolTaskExecutor)
-//                        .thenApplyAsync(url -> {
-//                            log.info(threadPoolTaskExecutor.toString());
-//                            log.info("thread: %name", Thread.currentThread().getName());
-//                            log.info("이 일을 처리하고 있는 녀석은?");
-//                            return new FileResponse(originalFileName, fileName, url.toString());
-//                        }, threadPoolTaskExecutor);
-//                fileRes.add(fileResponse);
-//            }
-//            return fileRes;
-//        });
-//        return fileResponseList;
-//    }
+        List<CompletableFuture<FileResponse>> fileResponseList = uploadFileNames.stream().map(uploadFileName -> {
+            String keyName = filePath + "/" + uploadFileName;
 
-
-    public CompletableFuture<List<FileResponse>> getPresignedUrls(List<MultipartFile> multipartFiles) throws ExecutionException, InterruptedException {
-        List<FileResponse> fileResponseList = new ArrayList<>();
-        for (MultipartFile multipartFile : multipartFiles) {
-            String originalFileName = multipartFile.getOriginalFilename();
-            String fileName = getNewFileName(originalFileName);
-            String filePath = FilePath.PRODUCT_DIR.getPath();
-            String keyName = filePath + "/" + fileName;
-
-            CompletableFuture<FileResponse> fileResponse = CompletableFuture.supplyAsync(() -> getGeneratePreSignedUrlRequest(bucketProperties.getBucketName(), keyName).join(), threadPoolTaskExecutor)
+            // validation check
+            boolean alreadyNameExists = amazonS3.doesObjectExist(bucketProperties.getBucketName(), keyName);
+            if (alreadyNameExists) throw new FileAlreadyExistsException();
+            return CompletableFuture.supplyAsync(() -> getGeneratePreSignedUrlRequest(bucketProperties.getBucketName(), keyName), threadPoolTaskExecutor)
                     .thenApplyAsync(generatePresignedUrlRequest -> amazonS3.generatePresignedUrl(generatePresignedUrlRequest), threadPoolTaskExecutor)
-                    .thenApplyAsync(url -> new FileResponse(originalFileName, fileName, url.toString()), threadPoolTaskExecutor);
-            fileResponseList.add(fileResponse.get());
-        }
-        return CompletableFuture.completedFuture(fileResponseList);
+                    .thenApplyAsync(url -> new FileResponse(uploadFileName, url.toString()), threadPoolTaskExecutor);
+        }).collect(Collectors.toList());
+
+        return CompletableFuture.allOf(fileResponseList.toArray(new CompletableFuture[0])).thenApply(all -> fileResponseList.stream().map(CompletableFuture::join).collect(Collectors.toList()));
     }
+
 
     /**
      * 파일 업로드용(PUT) presigned url 생성
@@ -102,14 +61,15 @@ public class FileService {
      * @param bucket   버킷 이름
      * @param fileName S3 업로드용 파일 이름
      */
-    private CompletableFuture<GeneratePresignedUrlRequest> getGeneratePreSignedUrlRequest(String bucket, String fileName) {
-        return CompletableFuture.supplyAsync(() -> new GeneratePresignedUrlRequest(bucket, fileName)
+    private GeneratePresignedUrlRequest getGeneratePreSignedUrlRequest(String bucket, String fileName) {
+        GeneratePresignedUrlRequest generatePresignedUrlRequest =
+                new GeneratePresignedUrlRequest(bucket, fileName)
                         .withMethod(HttpMethod.PUT)
-                        .withExpiration(getPreSignedUrlExpiration()), threadPoolTaskExecutor)
-                .thenApplyAsync(generatePresignedUrlRequest -> {
-                    generatePresignedUrlRequest.addRequestParameter(Headers.S3_CANNED_ACL, CannedAccessControlList.PublicRead.toString());
-                    return generatePresignedUrlRequest;
-                }, threadPoolTaskExecutor);
+                        .withExpiration(getPreSignedUrlExpiration());
+        generatePresignedUrlRequest.addRequestParameter(
+                Headers.S3_CANNED_ACL,
+                CannedAccessControlList.PublicRead.toString());
+        return generatePresignedUrlRequest;
     }
 
 
