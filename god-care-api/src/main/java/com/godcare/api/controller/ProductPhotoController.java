@@ -4,6 +4,7 @@ import com.godcare.api.service.FileService;
 import com.godcare.api.vo.Response;
 import com.godcare.common.dto.FileResponse;
 
+import com.godcare.common.dto.PresignedUrlRequest;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -28,18 +29,11 @@ public class ProductPhotoController {
     private final FileService fileService;
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
-//    @ResponseStatus(HttpStatus.CREATED)
-//    @Operation(summary = "presigned url 얻는 API ", description = "presigned url 얻는 API")
-//    @PostMapping(path = "/presigned_url")
-//    public CompletableFuture<Response<List<CompletableFuture<FileResponse>>>> getPresignedUrls(
-//            @RequestPart(value = "files") List<MultipartFile> multipartFiles) {
-//        return fileService.getPresignedUrls(multipartFiles).thenApplyAsync((res) -> Response.success(res));
-//    }
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "presigned url 얻는 API ", description = "presigned url 얻는 API")
     @PostMapping(path = "/presigned_url")
     public CompletableFuture<Response<List<FileResponse>>> getPresignedUrls(
-            @RequestPart(value = "files") List<MultipartFile> multipartFiles) throws ExecutionException, InterruptedException {
-        return fileService.getPresignedUrls(multipartFiles).thenApplyAsync((res) -> Response.success(res), threadPoolTaskExecutor);
+            @RequestBody PresignedUrlRequest presignedUrlRequest) throws ExecutionException, InterruptedException {
+        return fileService.getPresignedUrls(presignedUrlRequest.getUploadFileNames()).thenApplyAsync((res) -> Response.success(res), threadPoolTaskExecutor);
     }
 }
