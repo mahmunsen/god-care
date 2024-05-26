@@ -7,7 +7,6 @@ import lombok.*;
 @Getter
 @ToString
 public class FileResponse {
-    private String originalFileName;
     private String uploadFileName;
     private String presingedUrl;
 }
