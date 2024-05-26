@@ -29,6 +29,12 @@ public class CustomExceptionAdvice {
         return Response.fail("해당 이미지 파일을 찾을 수 없습니다.");
     }
 
+    @ExceptionHandler(FileAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Response fileAlreadyExistsException() {
+        return Response.fail("이미 해당 이미지 파일 이름이 존재합니다.");
+    }
+
     @ExceptionHandler(ProductSortTypeNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Response ProductSortTypeNotFoundException() {
