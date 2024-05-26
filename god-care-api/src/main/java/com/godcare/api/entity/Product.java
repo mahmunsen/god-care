@@ -69,8 +69,7 @@ public class Product {
         return new Product(id, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted);
     }
 
-    public void update(FileResponse file, Category category, UpdateProductRequest request) {
-//        this.mainImg = (file!= null) ? file.getUploadFileUrl() : this.mainImg;
+    public void update(Category category, UpdateProductRequest request) {
         this.category = (category != null) ? category : this.category;
         this.timeUpdated = Instant.now();
         this.name = (request.getName() != null) ? request.getName() : this.name;
