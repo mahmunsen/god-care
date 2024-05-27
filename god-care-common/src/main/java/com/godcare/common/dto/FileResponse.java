@@ -2,6 +2,8 @@ package com.godcare.common.dto;
 
 import lombok.*;
 
+import java.net.URL;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -11,6 +13,5 @@ public class FileResponse {
     private String uploadFileName;
     private String uploadFilePath;
     private String uploadFileUrl;
-    private String uploadId;
-//    private String eTag;
+    private URL presingedUrl;
 }

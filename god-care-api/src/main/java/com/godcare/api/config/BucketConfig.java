@@ -3,33 +3,31 @@ package com.godcare.api.config;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@Getter
+@Configuration
 @RequiredArgsConstructor
-@ConfigurationProperties(prefix = "spring.s3")
-@ConstructorBinding
 public class BucketConfig {
 
-    private final String endPoint = "https://kr.object.ncloudstorage.com";
-    private final String regionName = "kr-standard";
-    private final String accessKey;
-    private final String secretKey;
-    private final String bucketName;
+    private final BucketProperties bucketProperties;
 
     @Bean
-    public AmazonS3Client amazonS3Client() {
-        BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(accessKey, secretKey);
-        return (AmazonS3Client) AmazonS3ClientBuilder
-                .standard()
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, regionName))
-                .withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials))
+    public BasicAWSCredentials BasicAWSCredentials(){
+        BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(bucketProperties.getAccessKey(), bucketProperties.getSecretKey());
+        return basicAWSCredentials;
+    }
+
+    @Bean
+    public AmazonS3 amazonS3() {
+        AmazonS3 s3Builder = AmazonS3ClientBuilder.standard()
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(bucketProperties.getEndPoint(),
+                        bucketProperties.getRegionName()))
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(bucketProperties.getAccessKey(), bucketProperties.getSecretKey())))
                 .build();
+        return s3Builder;
     }
 }

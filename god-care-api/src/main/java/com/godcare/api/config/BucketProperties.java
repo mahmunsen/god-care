@@ -9,13 +9,12 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 @ConstructorBinding
 @RequiredArgsConstructor
 @ConfigurationProperties(prefix = "aws", ignoreUnknownFields = false)
-public class AsyncBucketProperties {
+public class BucketProperties {
 
     private final String accessKey;
     private final String secretKey;
     private final String bucketName;
     private final String regionName;
     private final String endPoint;
-    private final int multipartMinPartSize; // AWS S3 requires that file parts must have at least 5MB, except for the last part.
 
 }
