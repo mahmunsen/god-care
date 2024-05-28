@@ -35,6 +35,12 @@ public class CustomExceptionAdvice {
         return Response.fail("이미 해당 이미지 파일 이름이 존재합니다.");
     }
 
+    @ExceptionHandler(AtLeastOneImageRequiredException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Response atLeastOneImageRequiredException() {
+        return Response.fail("적어도 한 개 이상의 이미지 파일이 있어야 합니다.");
+    }
+
     @ExceptionHandler(ProductSortTypeNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Response ProductSortTypeNotFoundException() {
