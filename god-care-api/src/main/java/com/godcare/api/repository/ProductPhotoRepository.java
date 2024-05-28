@@ -11,4 +11,5 @@ import java.util.Optional;
 @Repository
 public interface ProductPhotoRepository extends JpaRepository<ProductPhoto, Long> {
     Optional<List<ProductPhoto>> findAllByProductAndIsDeletedFalse(Product product);
+    Optional<ProductPhoto> findByImgUrlAndIsDeletedFalseAndProduct(String imgUrl, Product product);
 }
