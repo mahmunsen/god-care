@@ -6,7 +6,6 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @ToString
-public class FileResponse {
-    private String uploadFileName;
+public class PresignedUrlResponse {
     private String presingedUrl;
 }
