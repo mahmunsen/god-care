@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public class DeletePhotoResponse {
-    private Long productId;
+    private Long productPhotoId;
     private String deletedUrl;
-    public DeletePhotoResponse(Long productId, String deletedUrl) {
-        this.productId = productId;
+    public DeletePhotoResponse(Long productPhotoId, String deletedUrl) {
+        this.productPhotoId = productPhotoId;
         this.deletedUrl = deletedUrl;
     }
 }
