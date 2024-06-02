@@ -3,13 +3,13 @@ package com.godcare.api.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.Instant;
+
 
 @SQLDelete(sql = "UPDATE product_photo SET is_deleted = true WHERE id = ?")
 @Table(name = "product_photo")
@@ -28,9 +28,8 @@ public class ProductPhoto {
     @Column(name = "image_url")
     private String imgUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
 
     @CreationTimestamp
     @Column(name = "time_created", nullable = false, updatable = false)
@@ -44,13 +43,17 @@ public class ProductPhoto {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    public static ProductPhoto from(String imageUrl, Product product) {
+    public static ProductPhoto from(String imageUrl) {
         Long id = null;
         String imgUrl = imageUrl;
-        Product pro = product;
+        Long productId = null;
         Instant timeCreated = Instant.now();
         Instant timeUpdated = null;
         Boolean isDeleted = false;
-        return new ProductPhoto(id, imgUrl, pro, timeCreated, timeUpdated, isDeleted);
+        return new ProductPhoto(id, imgUrl, productId, timeCreated, timeUpdated, isDeleted);
+    }
+
+    public void update(Long productId) {
+        this.productId = productId;
     }
 }

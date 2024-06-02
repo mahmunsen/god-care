@@ -1,5 +1,6 @@
 package com.godcare.api.entity;
 
+import com.godcare.common.dto.ResisterProductRequest;
 import com.godcare.common.dto.UpdateProductRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -53,16 +54,30 @@ public class Product {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    public static Product from(Category category) {
+//    public static Product from(Category category) {
+//        Long id = null;
+//        String name = "영양제 이름";
+//        BigDecimal price = BigDecimal.valueOf(10000);
+//        Integer quantity = 100;
+//        Boolean anyOptions = false;
+//        Category cat = category;
+//        Instant timeCreated = Instant.now();
+//        Instant timeUpdated = Instant.now();
+//        Boolean isDeleted = true;
+//
+//        return new Product(id, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted);
+//    }
+
+    public static Product from(Category category, ResisterProductRequest request) {
         Long id = null;
-        String name = "영양제 이름";
-        BigDecimal price = BigDecimal.valueOf(10000);
-        Integer quantity = 100;
-        Boolean anyOptions = false;
+        String name = request.getName();
+        BigDecimal price = request.getPrice();
+        Integer quantity = request.getQuantity();
+        Boolean anyOptions = request.getAnyOptions();
         Category cat = category;
         Instant timeCreated = Instant.now();
         Instant timeUpdated = Instant.now();
-        Boolean isDeleted = true;
+        Boolean isDeleted = false;
 
         return new Product(id, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted);
     }
