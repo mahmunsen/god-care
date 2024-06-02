@@ -1,6 +1,7 @@
 package com.godcare.api.controller;
 
 import com.godcare.api.entity.Product;
+import com.godcare.api.entity.ProductPhoto;
 import com.godcare.api.service.ProductService;
 import com.godcare.api.vo.*;
 import com.godcare.common.dto.*;
@@ -13,6 +14,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -26,17 +28,16 @@ public class ProductController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "상품 등록 API ", description = "새로운 상품을 등록하는 API")
     @PostMapping(path = "")
-    public CompletableFuture<Response<ResisterProductResponse>> addProduct() {
+    public CompletableFuture<Response<ResisterProductResponse>> addProduct(@RequestBody ResisterProductRequest resisterProductRequest) {
 
-        return productService.addProduct().thenApply((product) -> Response.success(new ResisterProductResponse(product.getId())));
+        return productService.addProduct(resisterProductRequest).thenApply((product) -> Response.success(new ResisterProductResponse(product.getId())));
     }
-
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "이미지 등록 API ", description = "상품의 이미지를 등록하는 API")
-    @PostMapping(path = "/{product_id}/product_photo")
-    public CompletableFuture<Response<UploadPhotoResponse>> uploadImgUrls(@PathVariable(value = "product_id") Long productId, @RequestBody UploadPhotoRequest uploadPhotoRequest) {
+    @PostMapping(path = "/product_photo")
+    public CompletableFuture<Response<UploadPhotoResponse>> uploadImgUrls(@RequestBody UploadPhotoRequest uploadPhotoRequest) {
 
-        return productService.uploadImgUrls(uploadPhotoRequest, productId).thenApply((product) -> Response.success(new UploadPhotoResponse(product.getId())));
+        return productService.uploadImgUrls(uploadPhotoRequest).thenApply((productPhotos) -> Response.success(new UploadPhotoResponse(productPhotos.stream().map(ProductPhoto::getId).collect(Collectors.toList()))));
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -54,19 +55,18 @@ public class ProductController {
         PageResponse<ViewProductListResponse> productList = productService.getProductsList(order, pageable);
         return Response.success(productList);
     }
-
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "단수 이미지 삭제 API ", description = "이미지 파일 하나씩 삭제 하는 API")
-    @DeleteMapping(path = "/{product_id}/product_photo")
-    public Response<DeletePhotoResponse> deletePhoto(@PathVariable(value = "product_id") Long productId, @RequestBody DeletePhotoRequest deletePhotoRequest) {
+    @DeleteMapping(path = "/product_photo")
+    public Response<DeletePhotoResponse> deletePhoto(@RequestBody DeletePhotoRequest deletePhotoRequest) {
 
-        DeletePhotoResponse deletePhotoResponse = productService.deletePhoto(productId, deletePhotoRequest.getImgUrlToDelete());
+        DeletePhotoResponse deletePhotoResponse = productService.deletePhoto(deletePhotoRequest.getImgUrlToDelete());
 
         return Response.success(deletePhotoResponse);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "상품 정보 등록 완료 하는 API ", description = "등록된 상품 정보 업데이트 하는 API")
+    @Operation(summary = "상품 정보 수정 하는 API ", description = "등록된 상품 정보 업데이트 하는 API")
     @PatchMapping(path = "/{product_id}")
     public Response<UpdateProductResponse> updateProduct(@PathVariable(value = "product_id") Long productId, @RequestBody UpdateProductRequest updateProductRequest) {
 
