@@ -26,14 +26,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 
-
 @RequiredArgsConstructor
 @Service
 public class ProductService {
 
     private final CategoryRepository categoryRepository;
     private final EmProductRepository emProductRepository;
-    private final FileService fileService;
     private final BucketProperties bucketProperties;
     private final ProductRepository productRepository;
     private final ProductPhotoRepository productPhotoRepository;
@@ -41,36 +39,48 @@ public class ProductService {
 
     /**
      * 상품 등록
+     *
+     * @param request 상품 업로드 요청 DTO
      */
     @TimeTrace
     @Transactional
-    public CompletableFuture<Product> addProduct() {
+    public CompletableFuture<Product> addProduct(ResisterProductRequest request) {
         CompletableFuture<Product> productFuture = CompletableFuture.supplyAsync(() -> {
-            Category category = categoryRepository.findById(1L).orElseThrow(() -> new CategoryNotFoundException());
-            return productRepository.save(Product.from(category));
-        }, threadPoolTaskExecutor);
+                    Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException());
+                    Product product = productRepository.save(Product.from(category, request));
+                    return product;
+                }, threadPoolTaskExecutor)
+                .thenApplyAsync(product -> {
+                    List<Long> productPhotoIds = request.getProductPhotoIds();
+                    if (productPhotoIds.isEmpty()) throw new AtLeastOneImageRequiredException();
+
+                    productPhotoIds.parallelStream().map((productPhotoId) -> {
+                        ProductPhoto productPhoto = productPhotoRepository.findById(productPhotoId).orElseThrow(() -> new ProductPhotoNotFoundException());
+                        productPhoto.update(product.getId());
+                        return productPhoto;
+                    }).forEach(productPhotoRepository::save);
+                    return product;
+                }, threadPoolTaskExecutor);
         return productFuture;
     }
 
     /**
      * 이미지 URL 업로드
      *
-     * @param request   이미지 업로드 요청 DTO
-     * @param productId 이미지 업로드 할 상품 ID
+     * @param request 이미지 업로드 요청 DTO
      */
-    public CompletableFuture<Product> uploadImgUrls(UploadPhotoRequest request, Long productId) {
-        CompletableFuture<Product> productFuture = CompletableFuture
-                .supplyAsync(() -> productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException()))
-                .thenApplyAsync(product -> {
+    public CompletableFuture<List<ProductPhoto>> uploadImgUrls(UploadPhotoRequest request) {
+        CompletableFuture<List<ProductPhoto>> productPhotos = CompletableFuture
+                .supplyAsync(() -> {
                     List<String> uploadFileNames = request.getProductPhotoNames();
-                    uploadFileNames.stream().map(uploadFileName -> {
+                    List<ProductPhoto> productPhotoList = uploadFileNames.stream().map(uploadFileName -> {
                         String imageUrl = "https://kr.object.ncloudstorage.com/" + bucketProperties.getBucketName() + "/" + FilePath.PRODUCT_DIR.getPath() + "/" + uploadFileName;
-                        ProductPhoto productPhoto = ProductPhoto.from(imageUrl, product);
+                        ProductPhoto productPhoto = ProductPhoto.from(imageUrl);
                         return productPhoto;
-                    }).forEach(productPhotoRepository::save);
-                    return product;
+                    }).map(productPhotoRepository::save).collect(Collectors.toList());
+                    return productPhotoList;
                 });
-        return productFuture;
+        return productPhotos;
     }
 
     /**
@@ -85,7 +95,7 @@ public class ProductService {
         });
 
         CompletableFuture<List<String>> photoUrlsFuture = productFuture.thenApplyAsync((product) -> {
-            List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductAndIsDeletedFalse(product).orElseThrow(() -> new ProductPhotoNotFoundException());
+            List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductId(product.getId()).orElseThrow(() -> new ProductPhotoNotFoundException());
             List<String> photoUrls = productPhotos.parallelStream().map(ProductPhoto::getImgUrl).collect(Collectors.toList());
             return photoUrls;
         });
@@ -101,16 +111,14 @@ public class ProductService {
     /**
      * 특정 상품의 이미지 하나 삭제
      *
-     * @param productId      이미지 삭제할 상품 ID
      * @param imgUrlToDelete 삭제할 특정 이미지 URL
      */
     @Transactional
-    public DeletePhotoResponse deletePhoto(Long productId, String imgUrlToDelete) {
+    public DeletePhotoResponse deletePhoto(String imgUrlToDelete) {
         // 찾기
-        Product product = productRepository.findByIdAndIsDeletedFalse(productId).orElseThrow(() -> new ProductNotFoundException());
-        ProductPhoto productPhoto = productPhotoRepository.findByImgUrlAndIsDeletedFalseAndProduct(imgUrlToDelete, product).orElseThrow(() -> new ProductPhotoNotFoundException());
-        productPhotoRepository.deleteById(productPhoto.getId());
-        return new DeletePhotoResponse(product.getId(), imgUrlToDelete);
+        ProductPhoto productPhoto = productPhotoRepository.findByImgUrlAndIsDeletedFalse(imgUrlToDelete).orElseThrow(() -> new ProductPhotoNotFoundException());
+        productPhotoRepository.deletePhotoById(productPhoto.getId());
+        return new DeletePhotoResponse(productPhoto.getId(), imgUrlToDelete);
     }
 
     /**
@@ -124,9 +132,18 @@ public class ProductService {
         // 찾기
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException());
         Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException());
-        List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductAndIsDeletedFalse(product).orElseThrow(() -> new ProductPhotoNotFoundException());
-        if (productPhotos.isEmpty()) throw new AtLeastOneImageRequiredException();
 
+        List<Long> productPhotoIds = request.getProductPhotoIds();
+        if (productPhotoIds.isEmpty()) {
+            List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductIdAndIsDeletedFalse(product.getId()).orElseThrow(() -> new ProductPhotoNotFoundException());
+            if (productPhotos.isEmpty()) throw new AtLeastOneImageRequiredException();
+        } else {
+            productPhotoIds.parallelStream().map((productPhotoId) -> {
+                ProductPhoto productPhoto = productPhotoRepository.findById(productPhotoId).orElseThrow(() -> new ProductPhotoNotFoundException());
+                productPhoto.update(product.getId());
+                return productPhoto;
+            }).forEach(productPhotoRepository::save);
+        }
         // 업데이트
         product.update(category, request);
         return productRepository.save(product);
@@ -139,7 +156,7 @@ public class ProductService {
      */
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException());
-        List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductAndIsDeletedFalse(product).orElseThrow(() -> new ProductPhotoNotFoundException());
+        List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductIdAndIsDeletedFalse(product.getId()).orElseThrow(() -> new ProductPhotoNotFoundException());
         productRepository.deleteById(product.getId());
         productPhotos.stream().forEach(productPhoto -> productPhotoRepository.deleteById(productPhoto.getId()));
     }
@@ -177,7 +194,7 @@ public class ProductService {
 
         List<ViewProductListResponse> viewProductListResponses = products.stream()
                 .map(product -> {
-                    List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductAndIsDeletedFalse(product).orElseThrow(() -> new ProductPhotoNotFoundException());
+                    List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductIdAndIsDeletedFalse(product.getId()).orElseThrow(() -> new ProductPhotoNotFoundException());
                     List<String> imgUrls = productPhotos.stream().map(ProductPhoto::getImgUrl).collect(Collectors.toList());
 
                     return new ViewProductListResponse(imgUrls, product.getCategory().getId(), product.getId(), product.getName(), product.getPrice(), product.getQuantity(), product.getAnyOptions(), DateUtils.convertToString(product.getTimeUpdated(), DateUtils.yearMonthDayHourMinuteSecond));
