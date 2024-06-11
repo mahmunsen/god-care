@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 public class ProductController {
 
     private final ProductService productService;
+    private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "상품 등록 API ", description = "새로운 상품을 업로드하는 API")
@@ -33,14 +35,12 @@ public class ProductController {
         return productService.addProduct(resisterProductRequest).thenApply((product) -> Response.success(new ResisterProductResponse(product.getId())));
     }
 
-
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "상품 조회 API ", description = "특정 상품 상세조회하는 API")
+    @Operation(summary = "상품 조회 API ", description = "특정 상품 상세 조회 하는 API")
     @GetMapping(path = "/{product_id}")
-    public Response<ViewProductResponse> viewProduct(@PathVariable(value = "product_id") Long productId) {
-        ViewProductResponse viewProductResponse = productService.getProduct(productId);
+    public CompletableFuture<Response<ViewProductResponse>> viewProduct(@PathVariable(value = "product_id") Long productId) {
 
-        return Response.success(viewProductResponse);
+        return productService.getProduct(productId).thenApplyAsync(viewProductResponse -> Response.success(viewProductResponse));
     }
 
     @ResponseStatus(HttpStatus.OK)
