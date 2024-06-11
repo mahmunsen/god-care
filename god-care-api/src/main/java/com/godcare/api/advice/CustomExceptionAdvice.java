@@ -17,6 +17,18 @@ public class CustomExceptionAdvice {
         return Response.fail("요청한 상품을 찾을 수 없습니다.");
     }
 
+    @ExceptionHandler(NotTempStatusException.class)
+    @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
+    public Response notTempStatusException() {
+        return Response.fail("상품의 현재 상태로는 업로드를 진행할 수 없습니다.");
+    }
+
+    @ExceptionHandler(NotCompleteStatusException.class)
+    @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
+    public Response notCompleteStatusException() {
+        return Response.fail("상품의 현재 상태로는 업데이트를 진행할 수 없습니다.");
+    }
+
     @ExceptionHandler(CategoryNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Response categoryNotFoundException() {
