@@ -11,7 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.time.Instant;
 
-@SQLDelete(sql = "UPDATE product SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE product_photo SET is_deleted = true WHERE id = ?")
 @Table(name = "product_photo")
 @Entity
 @AllArgsConstructor
@@ -23,10 +23,6 @@ public class ProductPhoto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-
-    @Lob
-    @Column(name = "original_name")
-    private String originalName;
 
     @Lob
     @Column(name = "image_url")
@@ -48,14 +44,13 @@ public class ProductPhoto {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    public static ProductPhoto from(String origName, String imageUrl, Product product) {
+    public static ProductPhoto from(String imageUrl, Product product) {
         Long id = null;
-        String originalName = origName;
         String imgUrl = imageUrl;
         Product pro = product;
         Instant timeCreated = Instant.now();
         Instant timeUpdated = null;
         Boolean isDeleted = false;
-        return new ProductPhoto(id, originalName, imgUrl, pro, timeCreated, timeUpdated, isDeleted);
+        return new ProductPhoto(id, imgUrl, pro, timeCreated, timeUpdated, isDeleted);
     }
 }

@@ -2,16 +2,12 @@ package com.godcare.api.service;
 
 import com.godcare.api.advice.annotation.TimeTrace;
 import com.godcare.api.config.BucketProperties;
-import com.godcare.api.controller.ProductController;
 import com.godcare.api.entity.Category;
 import com.godcare.api.entity.Product;
 import com.godcare.api.entity.ProductPhoto;
 import com.godcare.api.enums.FilePath;
 import com.godcare.api.enums.ProductSortType;
-import com.godcare.api.exception.CategoryNotFoundException;
-import com.godcare.api.exception.FileUploadFailedException;
-import com.godcare.api.exception.ProductNotFoundException;
-import com.godcare.api.exception.ProductPhotoNotFoundException;
+import com.godcare.api.exception.*;
 import com.godcare.api.repository.CategoryRepository;
 import com.godcare.api.repository.EmProductRepository;
 import com.godcare.api.repository.ProductPhotoRepository;
@@ -21,21 +17,14 @@ import com.godcare.api.vo.PageableRequest;
 import com.godcare.api.vo.PageResponse;
 import com.godcare.common.dto.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.stream;
 
 
 @RequiredArgsConstructor
@@ -52,25 +41,31 @@ public class ProductService {
 
     /**
      * 상품 등록
-     *
-     * @param request 상품 등록 요청 DTO
      */
     @TimeTrace
     @Transactional
-    public CompletableFuture<Product> addProduct(ResisterProductRequest request) {
+    public CompletableFuture<Product> addProduct() {
+        CompletableFuture<Product> productFuture = CompletableFuture.supplyAsync(() -> {
+            Category category = categoryRepository.findById(1L).orElseThrow(() -> new CategoryNotFoundException());
+            return productRepository.save(Product.from(category));
+        }, threadPoolTaskExecutor);
+        return productFuture;
+    }
 
+    /**
+     * 이미지 URL 업로드
+     *
+     * @param request   이미지 업로드 요청 DTO
+     * @param productId 이미지 업로드 할 상품 ID
+     */
+    public CompletableFuture<Product> uploadImgUrls(UploadPhotoRequest request, Long productId) {
         CompletableFuture<Product> productFuture = CompletableFuture
-                .supplyAsync(() -> categoryRepository.findById(request.getCategoryId())
-                        .orElseThrow(() -> new CategoryNotFoundException()), threadPoolTaskExecutor)
-                .thenApplyAsync(category ->
-                        productRepository.save(Product.from(request, category)), threadPoolTaskExecutor)
+                .supplyAsync(() -> productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException()))
                 .thenApplyAsync(product -> {
-                    List<Map<String, String>> photos = request.getProductPhotos();
-                    photos.stream().map(photo -> {
-                        String originalFileName = photo.get("originalFileName");
-                        String uploadFileName = photo.get("uploadFileName");
+                    List<String> uploadFileNames = request.getProductPhotoNames();
+                    uploadFileNames.stream().map(uploadFileName -> {
                         String imageUrl = "https://kr.object.ncloudstorage.com/" + bucketProperties.getBucketName() + "/" + FilePath.PRODUCT_DIR.getPath() + "/" + uploadFileName;
-                        ProductPhoto productPhoto = ProductPhoto.from(originalFileName, imageUrl, product);
+                        ProductPhoto productPhoto = ProductPhoto.from(imageUrl, product);
                         return productPhoto;
                     }).forEach(productPhotoRepository::save);
                     return product;
@@ -85,7 +80,7 @@ public class ProductService {
      */
     public CompletableFuture<ViewProductResponse> getProduct(Long productId) {
         CompletableFuture<Product> productFuture = CompletableFuture.supplyAsync(() -> {
-            Product product = productRepository.findByIdAndIsDeletedFalse(productId).orElseThrow(() -> new ProductNotFoundException());
+            Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException());
             return product;
         });
 
@@ -102,43 +97,58 @@ public class ProductService {
 
         return viewProductResponseFuture;
     }
-
-
-
-    // 상품 수정
+    /**
+     * 특정 상품의 이미지 하나 삭제
+     *
+     * @param productId      이미지 삭제할 상품 ID
+     * @param imgUrlToDelete 삭제할 특정 이미지 URL
+     */
     @Transactional
-    public Product updateProduct(Long productId, UpdateProductRequest request, MultipartFile mainImg) {
+    public DeletePhotoResponse deletePhoto(Long productId, String imgUrlToDelete) {
         // 찾기
         Product product = productRepository.findByIdAndIsDeletedFalse(productId).orElseThrow(() -> new ProductNotFoundException());
-        Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException());
+        ProductPhoto productPhoto = productPhotoRepository.findByImgUrlAndIsDeletedFalseAndProduct(imgUrlToDelete, product).orElseThrow(() -> new ProductPhotoNotFoundException());
+        productPhotoRepository.deleteById(productPhoto.getId());
+        return new DeletePhotoResponse(product.getId(), imgUrlToDelete);
+    }
 
-        String getImg = product.getMainImg();
-        String imgToDelete = getImg.substring(getImg.lastIndexOf("/") + 1);
-        String filePath = FilePath.PRODUCT_DIR.getPath();
-        FileResponse file = getUpdatedFileUrl(mainImg, filePath, imgToDelete);
+    /**
+     * 특정 상품의 정보 등록 완료, 업데이트
+     *
+     * @param productId 정보 업데이트 할 상품 ID
+     * @param request   업데이트 요청 DTO
+     */
+    @Transactional
+    public Product updateProduct(Long productId, UpdateProductRequest request) {
+        // 찾기
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException());
+        Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException());
+        List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductAndIsDeletedFalse(product).orElseThrow(() -> new ProductPhotoNotFoundException());
+        if (productPhotos.isEmpty()) throw new AtLeastOneImageRequiredException();
 
         // 업데이트
-        product.update(file, category, request);
+        product.update(category, request);
         return productRepository.save(product);
     }
 
-    // 상품 삭제
+    /**
+     * 특정 상품 삭제
+     *
+     * @param productId 삭제할 상품 ID
+     */
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException());
+        List<ProductPhoto> productPhotos = productPhotoRepository.findAllByProductAndIsDeletedFalse(product).orElseThrow(() -> new ProductPhotoNotFoundException());
         productRepository.deleteById(product.getId());
+        productPhotos.stream().forEach(productPhoto -> productPhotoRepository.deleteById(productPhoto.getId()));
     }
 
-    private List<FileResponse> getFileUrls(List<MultipartFile> mainImgs, String filePath) {
-        try {
-            if (mainImgs != null) {
-                return fileService.uploadFiles(mainImgs, filePath);
-            }
-        } catch (Exception e) {
-            throw new FileUploadFailedException();
-        }
-        return null;
-    }
-
+    /**
+     * 상품 리스트 전체 조회
+     *
+     * @param order    정렬 기준
+     * @param pageable 페이지 형식
+     */
     @TimeTrace
     public PageResponse<ViewProductListResponse> getProductsList(String order, PageableRequest pageable) {
         ProductSortType productSortType = ProductSortType.from(order);
@@ -180,10 +190,5 @@ public class ProductService {
 
     private void getCursorId(PageableRequest pageable, List<Product> products) {
         if (products.size() > 0) pageable.setCursor(String.valueOf(products.get(products.size() - 1).getId()));
-    }
-
-    public String getNewFileName(String fileName) {
-        String ext = fileName.substring(fileName.indexOf(".") + 1);
-        return String.valueOf(Instant.now()) + UUID.randomUUID() + "." + ext;
     }
 }

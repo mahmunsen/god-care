@@ -24,3 +24,10 @@ aws:
   regionName: kr-standard
   endpoint: https://kr.object.ncloudstorage.com
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+
