@@ -55,11 +55,8 @@ public class ProductService {
                     List<Long> productPhotoIds = request.getProductPhotoIds();
                     if (productPhotoIds.isEmpty()) throw new AtLeastOneImageRequiredException();
 
-                    productPhotoIds.parallelStream().map((productPhotoId) -> {
-                        ProductPhoto productPhoto = productPhotoRepository.findById(productPhotoId).orElseThrow(() -> new ProductPhotoNotFoundException());
-                        productPhoto.update(product.getId());
-                        return productPhoto;
-                    }).forEach(productPhotoRepository::save);
+                    productPhotoIds.parallelStream().forEach(productPhotoId -> productPhotoRepository.updateProductIdByPhotoId(product.getId(), productPhotoId));
+
                     product.setStatus("COMPLETE");
                     productRepository.save(product);
                     return product;
