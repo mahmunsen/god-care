@@ -60,20 +60,6 @@ public class Product {
     @Column(name = "status")
     private String status;
 
-    @PrePersist
-    public void validateStatus() {
-        if (!status.equals("TEMP")) {
-            throw new NotTempStatusException();
-        }
-    }
-
-    @PreUpdate
-    public void updateProductStatus() {
-        if (!status.equals("COMPLETE")) {
-            throw new NotCompleteStatusException();
-        }
-    }
-
     public static Product from(Category category, ResisterProductRequest request) {
         Long id = null;
         String name = request.getName();
