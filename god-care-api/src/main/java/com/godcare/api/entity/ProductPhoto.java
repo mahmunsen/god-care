@@ -36,7 +36,7 @@ public class ProductPhoto {
     private Instant timeCreated;
 
     @UpdateTimestamp
-    @Column(name = "time_updated", insertable = false)
+    @Column(name = "time_updated", nullable = false)
     private Instant timeUpdated;
 
     @ColumnDefault(value = "false")
