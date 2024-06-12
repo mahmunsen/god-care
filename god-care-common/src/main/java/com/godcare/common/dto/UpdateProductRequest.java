@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import java.math.BigDecimal;
+import java.util.List;
 
 @AllArgsConstructor
 @Schema(description = "상품 정보 등록하는 DTO")
@@ -35,5 +36,9 @@ public class UpdateProductRequest {
     @NotBlank(message = "상품 옵션 여부를 입력해주세요.")
     @ApiModelProperty(value = "상품 옵션 여부 입력 필드", dataType = "Boolean")
     private Boolean anyOptions;
+
+    @NotBlank(message = "상품 이미지 아이디들을 입력해주세요.")
+    @ApiModelProperty(value = "상품 이미지 아이디 입력 필드", dataType = "List<Long>")
+    private List<Long> productPhotoIds;
 
 }

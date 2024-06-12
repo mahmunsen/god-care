@@ -5,10 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @ToString
 public class UploadPhotoResponse {
-    private Long productId;
+    private List<Long> productPhotoIds;
 }
