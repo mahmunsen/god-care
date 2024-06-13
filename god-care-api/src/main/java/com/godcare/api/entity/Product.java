@@ -1,5 +1,7 @@
 package com.godcare.api.entity;
 
+import com.godcare.api.exception.NotCompleteStatusException;
+import com.godcare.api.exception.NotTempStatusException;
 import com.godcare.common.dto.ResisterProductRequest;
 import com.godcare.common.dto.UpdateProductRequest;
 import lombok.AllArgsConstructor;
@@ -54,19 +56,9 @@ public class Product {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-//    public static Product from(Category category) {
-//        Long id = null;
-//        String name = "영양제 이름";
-//        BigDecimal price = BigDecimal.valueOf(10000);
-//        Integer quantity = 100;
-//        Boolean anyOptions = false;
-//        Category cat = category;
-//        Instant timeCreated = Instant.now();
-//        Instant timeUpdated = Instant.now();
-//        Boolean isDeleted = true;
-//
-//        return new Product(id, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted);
-//    }
+    @ColumnDefault(value = "TEMP")
+    @Column(name = "status")
+    private String status;
 
     public static Product from(Category category, ResisterProductRequest request) {
         Long id = null;
@@ -78,8 +70,9 @@ public class Product {
         Instant timeCreated = Instant.now();
         Instant timeUpdated = Instant.now();
         Boolean isDeleted = false;
+        String status = "TEMP";
 
-        return new Product(id, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted);
+        return new Product(id, name, price, quantity, anyOptions, cat, timeCreated, timeUpdated, isDeleted, status);
     }
 
     public void update(Category category, UpdateProductRequest request) {
@@ -90,5 +83,9 @@ public class Product {
         this.quantity = (request.getQuantity() != null) ? request.getQuantity() : this.quantity;
         this.anyOptions = (request.getAnyOptions() != null) ? request.getAnyOptions() : this.anyOptions;
         this.isDeleted = false;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

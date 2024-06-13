@@ -47,18 +47,18 @@ public class ProductService {
     public CompletableFuture<Product> addProduct(ResisterProductRequest request) {
         CompletableFuture<Product> productFuture = CompletableFuture.supplyAsync(() -> {
                     Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException());
-                    Product product = productRepository.save(Product.from(category, request));
+                    Product product = Product.from(category, request);
+                    productRepository.save(product);
                     return product;
                 }, threadPoolTaskExecutor)
                 .thenApplyAsync(product -> {
                     List<Long> productPhotoIds = request.getProductPhotoIds();
                     if (productPhotoIds.isEmpty()) throw new AtLeastOneImageRequiredException();
 
-                    productPhotoIds.parallelStream().map((productPhotoId) -> {
-                        ProductPhoto productPhoto = productPhotoRepository.findById(productPhotoId).orElseThrow(() -> new ProductPhotoNotFoundException());
-                        productPhoto.update(product.getId());
-                        return productPhoto;
-                    }).forEach(productPhotoRepository::save);
+                    productPhotoIds.parallelStream().forEach(productPhotoId -> productPhotoRepository.updateProductIdByPhotoId(product.getId(), productPhotoId));
+
+                    product.setStatus("COMPLETE");
+                    productRepository.save(product);
                     return product;
                 }, threadPoolTaskExecutor);
         return productFuture;

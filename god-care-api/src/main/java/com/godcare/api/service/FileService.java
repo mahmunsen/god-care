@@ -30,18 +30,21 @@ public class FileService {
 
         String filePath = FilePath.PRODUCT_DIR.getPath();
 
-        List<CompletableFuture<PresignedUrlResponse>> fileResponseList = uploadFileNames.stream().map(uploadFileName -> {
-            String keyName = filePath + "/" + uploadFileName;
+        CompletableFuture<List<PresignedUrlResponse>> fileResponseList = CompletableFuture.supplyAsync(() ->
+                uploadFileNames.parallelStream()
+                        .map(uploadFileName -> filePath + "/" + uploadFileName)
+                        .map(keyName -> {
+                            // validation check
+                            boolean alreadyNameExists = amazonS3.doesObjectExist(bucketProperties.getBucketName(), keyName);
+                            if (alreadyNameExists) throw new FileAlreadyExistsException();
+                            return keyName;
+                        })
+                        .map(keyName -> getGeneratePreSignedUrlRequest(bucketProperties.getBucketName(), keyName))
+                        .map(generatePresignedUrlRequest -> amazonS3.generatePresignedUrl(generatePresignedUrlRequest))
+                        .map(url -> new PresignedUrlResponse(url.toString()))
+                        .collect(Collectors.toList()));
 
-            // validation check
-            boolean alreadyNameExists = amazonS3.doesObjectExist(bucketProperties.getBucketName(), keyName);
-            if (alreadyNameExists) throw new FileAlreadyExistsException();
-            return CompletableFuture.supplyAsync(() -> getGeneratePreSignedUrlRequest(bucketProperties.getBucketName(), keyName), threadPoolTaskExecutor)
-                    .thenApplyAsync(generatePresignedUrlRequest -> amazonS3.generatePresignedUrl(generatePresignedUrlRequest), threadPoolTaskExecutor)
-                    .thenApplyAsync(url -> new PresignedUrlResponse(url.toString()), threadPoolTaskExecutor);
-        }).collect(Collectors.toList());
-
-        return CompletableFuture.allOf(fileResponseList.toArray(new CompletableFuture[0])).thenApply(all -> fileResponseList.stream().map(CompletableFuture::join).collect(Collectors.toList()));
+        return fileResponseList;
     }
 
 
