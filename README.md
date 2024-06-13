@@ -43,10 +43,14 @@
 
 ## 프로젝트 구조
 
+<img src="https://github.com/mahmunsen/god-care/assets/119462011/d299df28-59c6-4f34-9798-8dcb013218a2" height="300"/>
 
+
+</br>
 </br>
 
 ## 기술적 이슈 및 해결 과정 
 
+추후 기술 예정
 
 </br>
